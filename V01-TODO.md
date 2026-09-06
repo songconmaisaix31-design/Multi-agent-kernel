@@ -107,7 +107,13 @@ G08 回归门 → G09 CURRENT/KERNEL 两组对照 → G10 实验版评审/退出
 - 环境复核：原 AppImage SHA256 再次与官方值一致。现有 Ubuntu WSL Running、默认 uid=0，宿主 HOME 可见；root 下 userns 命令成功不能证明非 root 实验隔离。常见 VM 命令/安装路径及 vmms 未找到；不据此扩大权限或直接在共享 WSL 运行实验。C: 空闲约 69.4 GiB，D: 190.1 GiB。
 - A 已报告完成并经总控独立复跑：`5d2f78d9077a8a14abe20a1136e3c83a4955773c`，仅两条 write_paths，`node --test tests/kernel/plan.test.ts` 121/121，通过且无跳过；远端 SHA 一致。尚未运行 TypeScript 独立类型检查或 Orca 全仓构建。`worker-release` 返回 retained/external_terminal/processAction=none，原生机制未拥有该预先创建终端；已停止工作且保留，不强制关闭。
 - 专用 WSL 实查（非正式运行环境）：从原诊断镜像创建未启动容器 `orca-kernel-wsl-export-14c174a` 并导出 2053503488 字节根文件系统，在首次启动前写入独立 wsl.conf：禁用 automount/fstab/Windows interop、默认 node；通过已有 WSL 导入 `OrcaKernelLab-v014188`，所有文件位于 `C:/Users/DW/AppData/Local/OrcaKernelLab/wsl/`。未安装系统组件/提权/重启/全局修改。uid=1000、宿主 HOME 不可见、userns 退出0，但 `/mnt/wsl` 仍包含 Docker Desktop 共享 sockets 与其他 bind mounts，隔离不通过；未启动 Orca/模型。已仅 terminate 该实验 distro，原 Ubuntu/Docker 不动。该实例不得用于模型实验，不能把 userns 成功记为 G03 通过。配置和导入方式参考 Microsoft WSL 官方文档，现场保留。
-- 下一批：A 代码经总控复核后交集成执行者整合。Fork 和安全运行环境就绪后接入现有 Orca 服务，再验真实 Worker/结果/停止。CURRENT/KERNEL 12 次尚未执行，认证与预算数值未核实，不新增费用。
+- B 已完成并推送：`ad997b786f451a6e3fea444b52a601c8b0c6ed33`；[固定版本接入核查](docs/ORCA-INTEGRATION.md) 确认 U=`f32ce859047a85a3ea4f507f633604dfbf596a0e`，高/低层两条准入事务、schema 29、原生生命周期复用与脚本副作用。其 release 同样为 retained/external_terminal，两开发轨终端保留空闲，不宣称已退出。
+- 首批已整合：C Task `task_120ba73a567b` / Dispatch `ctx_075e066a8878`，独立 Worktree `C:/Users/DW/orca/workspaces/Multi-agent-kernel/kernel-v01-candidate`，Branch `songconmaisaix31-design/kernel-v01-candidate`；从 `20247530ea76e6c5a181272fb9dc6db38a937f8c` 顺序 no-ff 合并 A/B，最终候选 `6e3c43df333630bc5b156b1873f01d0e78357c28` 已普通 push、远端一致。本协调分支仅 fast-forward 接收已验收候选，未编写领域代码，保留全部来源历史。
+- 实际验收：Node v24.16.0 `node --test tests/kernel/plan.test.ts` 121通过/0失败/0跳过；`git diff --check`、两来源 `git merge-base --is-ancestor`、三文件范围、来源文件内容相同及其余基线文件不变均通过。总控亦独立重跑规则测试；冻结 CURRENT 协议与原始路线图逐字比较、Markdown 链接和围栏检查通过。可复查 [规则实现](src/kernel/plan.ts) 与 [实际测试](tests/kernel/plan.test.ts)。仅词法规则已实现/通过/整合，不是受管运行或 v0.1 全部完成。
+- 原生资源收尾限制：C `worker-release` 返回 release_unknown/tab_not_found；按回执 worker-show + 相同 request `d9a7afc6-3b0b-4afd-aa0e-679520d4310b` 重试仍同结果。worker-show 精确观察为 exited、connected=false、writable=false，transcript 已 captured，故进程退出有证据但清理元数据未确认；未使用 broad terminal close、未修日常运行时。两次同结果后停止重复重试。
+- 下一步与真正缺口：已有源码 Fork 路径/新增公开 Fork 决策尚待用户回复；尚未创建公开资源。取得获准源码工作位置后由 A/B 原轨接入 Run 开关、准入及候选验收，再测真实 Worker/结果/停止和最终整合。现有 Docker 与专用 WSL 均未通过运行隔离；未安装其他虚拟化组件、提权或放宽安全策略。CURRENT/KERNEL 12 次未执行：功能尚未就绪，独立认证、CURRENT 完整复现与已有预算数值仍未核实；不宣称胜出，不新增收费。
+- 上游全仓构建、独立 TypeScript 类型检查与源码运行验收均未执行。Node24 Docker 基础镜像直接 inspect 显示不在本地普通镜像存储（既有 build cache 不等于可 docker run 镜像），未追加下载来凑跨系统通过。
+- WSL 操作依据：[Microsoft 导入分发](https://learn.microsoft.com/en-us/windows/wsl/use-custom-distro)、[每分发配置](https://learn.microsoft.com/en-us/windows/wsl/wsl-config)；设置存在不代替上述挂载实测。
 
 ### 0.4 每关统一放行规则
 
@@ -306,7 +312,7 @@ CURRENT 记忆/提示词钩子不能完整定位时标“CURRENT 复现待确认
 - [ ] **G01.01** 审查容器运行用户、独立 HOME/Codex home、挂载和端口；G02 运行后实测 UID/路径。不创建 Windows 实验用户，不用配置文件代替实测。
 - [ ] **G01.02** 创建一个保留上游历史的 Fork；origin 指向你的仓库，upstream 指向 stablyai/orca。取消额外“原生对照仓库”的强制建设。
 - [ ] **G01.03** 固定 CURRENT 的 M=Orca 1.4.188：核对同版本 Linux 发行包/源码、下载来源、实际执行器与启动方式，登记相对 Windows 日常方式的差异。不可得写未知，不用 latest 或最新 U 替换 M。
-- [ ] **G01.04** 明确选择 U，优先对应 M；从 U 建立 Kernel 分支，保留起点记录。此时不改功能，G02 就在这份 Fork 上验证 U。M/U 差异预先登记。
+- [ ] **G01.04** 明确选择 U，优先对应 M；从 U 建立 Kernel 分支，保留起点记录。保留未修改 U 供 G02 验证；已具备条件的功能分支可并行开发。M/U 差异预先登记。
 - [ ] **G01.05** 保留已保存原始协议，记录记忆与提示词钩子的实得来源和可用内容，不编造导出。未定位/无法等价导出的部分登记 CURRENT 复现待确认，交给 G04，不阻塞源码或未计分环境冒烟。保留通用经验，秘密不进 Git/镜像；不复制整个日常目录、不擅自重写协议。
 - [ ] **G01.06** 阅读 AGENTS.md、贡献指南、package.json、setup、开发启动与 CLI 安装脚本，再安装依赖。记录外部命令和可能写入位置。
 - [ ] **G01.07** 审查 Actions、自动更新、遥测、app identity、URI scheme。初期只做源码版，不触发 installer/release，不覆盖 D。
@@ -420,7 +426,7 @@ G02 已在非 root 实验容器通过。你允许在实验配置和记忆副本�
 
 ### Agent To-Do
 
-- [ ] **G03.01** 记录 D、临时 base-smoke、CURRENT-smoke、KERNEL-dev 的宿主/容器身份、UID、实际 HOME/Codex home、程序来源、profile、CLI、挂载、卷与端口。只有 CURRENT/KERNEL 参加主比较；此时 Kernel 尚无功能修改。
+- [ ] **G03.01** 记录 D、临时 base-smoke、CURRENT-smoke、KERNEL-dev 的宿主/容器身份、UID、实际 HOME/Codex home、程序来源、profile、CLI、挂载、卷与端口。只有 CURRENT/KERNEL 参加主比较；分别记录未修改 U 与已有 Kernel 功能候选。
 - [ ] **G03.02** 逐一读取 runtimeId/进程/可达性，核对实际目标。不同 profile 不是同一个 runtimeId 的别名。
 - [ ] **G03.03** 在实验版注册 scratch、改一个普通设置、添加一个非敏感标记；核对 D 对应仓库列表和设置没有改变，不要求 D 的运行日志绝对不变。
 - [ ] **G03.04** 从外部控制终端、协调终端、Worker 终端分别查询身份。WSL Worker 必须用其实际注入的命令，不能替换成 Linux PATH 中同名程序。
@@ -477,7 +483,7 @@ Bash 可对这些具体路径使用 `ls -ld`、`readlink` 和只读摘要。不�
 
 ### 目标与人工动作
 
-G03 通过。你批准有限目标、预算、实验远端 push 和正常人工帮助边界。**本关只验证 CURRENT 现状可运行并冻结两组比较规则；Kernel 正式功能尚未开发，其完成验证在 G08，不要求此时提供新内核结果。**
+G03 通过。你批准有限目标、预算、实验远端 push 和正常人工帮助边界。**本关只验证 CURRENT 现状可运行并冻结两组比较规则；Kernel 功能可按真实依赖并行开发，其完成验证在 G08，不要求此时提供新内核结果。**
 
 本关承接 G00/G01/G02 遗留的“CURRENT 复现待确认”：核实实际记忆来源、提示词钩子触发与导出/加载方式；原始协议正文已保存不等于完整加载方式已验证。上述未知项不再反向阻塞之前的 Docker 检查、源码阅读或未计分环境冒烟，但解决前不接纳 CURRENT 正式结果、不放行 G04。
 
@@ -1044,7 +1050,7 @@ node $Cli orchestration worker-show --dispatch $DispatchId --json
 ### B1. 容器非 root 身份与 Windows 保护
 
 - [ ] 不创建独立 Windows 用户；记录日常 D 的当前身份和保护范围。
-- [ ] G00 放行后，容器运行时明确非 root UID、真实 HOME、Codex home、Orca profile；不能只修改 HOME 文本冒充身份隔离。
+- [ ] 在获准实验范围，容器运行时明确非 root UID、真实 HOME、Codex home、Orca profile；不能只修改 HOME 文本冒充身份隔离。
 - [ ] 源码、目标、记忆和必要配置均为容器内独立副本；只导出经确认的基线项目，不复制整个日常目录。
 - [ ] Windows 稳定 Orca 用于现有协调；未经验证的 Kernel 不作为唯一开发/恢复工具。实验协调和 Worker 身份必须来自容器自身运行实例。
 - [ ] G03 验证链接、挂载、回写与跨轮复位；非 root 标志本身不证明隔离。
