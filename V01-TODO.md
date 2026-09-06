@@ -4,7 +4,9 @@
 
 **用途：** 作为 Fork 内唯一的开发推进依据，建议保存为 `V01-TODO.md`。每次只放行一个主关卡；关卡内按子步骤执行。文档编写完成不代表环境、功能或实验已经通过。
 
-**交付目标：** 基于 Orca 的小幅二开，让已有轻量 Kit 的有效方法成为可关闭、可检查、可接管的协作模式。**主对照只保留两组：CURRENT（你目前实际使用的 Orca＋实际生效 Kit）与 KERNEL（修改后的版本）。** 核心问题只有一个：新版本相对你现在的工作方式，是否有真实净收益。
+**交付目标：** 基于 Orca 的小幅二开，让当前有效方法成为可关闭、可检查、可接管的协作模式。**主对照只保留两组：CURRENT（Codex 当前生效的一条内置提示词＋长期记忆＋触发或读取记忆的提示词钩子＋Orca 1.4.188 的基础设施与惯常操作）与 KERNEL（修改后的版本）。** 核心问题只有一个：新版本相对你现在的工作方式，是否有真实净收益。
+
+**2026-09-06 用户决定，覆盖本手册冲突条款：** 本轮采用 Docker-first，取消独立 Windows 用户前置要求；Windows 日常 Orca 不变，实验 Orca/Codex、非 root HOME、记忆副本和目标仓库在容器内。VM 只作失败后的备选，不同时建设。后文保留 K 作为上述三项配置起点的记号，“Kit”不再表示独立压缩包或新系统。提示词钩子不默认是可执行拦截器。当前仍只执行 G00，只读环境检查和已授权文档更新；不安装、不启动实验容器/收费任务。该决定不等于 G00 放行，更不等于 G03 隔离通过。
 
 **本次修订：** 取消独立“原生 Orca 性能对照组”及其配置、运行台账和验收负担。需要原生能力参照时，直接使用 **CODEX（原生 Codex 独立运行，可选）**，不经 Orca、不加载 Kit/Kernel。CODEX 单独记录、默认不执行，不进入主对照样本和 v0.1 放行前提。主实验由原来的安排收缩为 **2 类任务 × 2 组 × 每组 3 次＝12 次**。
 
@@ -12,7 +14,7 @@
 
 **明确不做：** 新 IDE、终端/进程管理器、任务数据库、消息系统、分布式调度、全自动恢复、通用安全沙箱、进化层、行业模板市场和生产自动发布。OpenDashboard 只承担有限真实任务验证，不同时重构整个产品。
 
-> 本手册保留原稿的官方资料、源码阅读结论与技术边界；本次只修订比较方案及其关联步骤，没有新增在线核查，也没有访问你的主机、创建 Fork、运行 Orca 或审计实际 Kit。命令需要在选定 U、实际当前版本 M 和真实操作系统上复核。正文的功能规则是设计要求，不是已经存在的 Orca 功能。文末列出原稿来源。
+> 原稿研究说明保留在附录 F；其中“未访问主机/未执行”描述原稿撰写时的状态。本项目随后已有 G00 只读证据，见唯一看板和交接，不以原稿初始状态覆盖实际进展。命令仍需在选定 U、实际 M 和真实操作系统上复核；正文功能规则是设计要求，不是已实现功能。
 
 ---
 
@@ -71,6 +73,8 @@ G08 回归门 → G09 CURRENT/KERNEL 两组对照 → G10 实验版评审/退出
 
 **2026-09-06 接手记录：** 本文件从用户提供的两组对照版执行手册导入。初始声明与研究来源保留；本轮只补 G00 实际状态，仍为 0/11 关通过。实验身份尚未确认、实际 Kit 尚未完整定位，G00 不放行。事实、未知项及冷备份方案见上方交接；后续关卡均未开始。
 
+**同日后续决定与检查：** 上段为首次接手历史。用户已确定 Docker-first 和 CURRENT 三项配置定义，取消寻找独立 Kit/Windows 实验账户的阻塞。本轮 Docker CLI/Compose 可用，但 Engine 管道不存在；提示词的精确身份与记忆导出/触发机制尚需核实。G00 继续阻塞，G01–G10 保持原状态；检查结果见同一 G00 交接的后续补充。
+
 ### 0.4 每关统一放行规则
 
 进入前：上一关已通过，基线与权限未失效。执行后：实际命令、实际候选和实际结果可对应。没有执行的测试写“未测”，不能写“预计通过”。
@@ -89,7 +93,7 @@ G08 回归门 → G09 CURRENT/KERNEL 两组对照 → G10 实验版评审/退出
 
 **但是，Codex 相关源码还会从实际系统用户的 `homedir()/.codex` 取得全局资源，涉及 AGENTS.md、提示词、skills、hooks 等；还存在配置镜像/设置回写和会话桥接/回填路径。独立 userData 或单独设置 CODEX_HOME，都不能独自证明没有继承旧 Kit 或旧会话。** 具体采用了哪条路径，必须在 U 的调用链和真实 Worker 中验证。[S10–S13]
 
-因此，本手册把默认安排加强为：**实验运行使用独立非管理员系统用户；正式对照优先使用可恢复到干净起点的实验环境。** 日常用户 D 不运行未经验证的实验 Codex。不是要求开发一个隔离系统，而是利用操作系统已有边界。
+因此，本轮采用**容器内非 root 用户、独立 HOME 与状态副本，并验证可恢复的试验起点**。不要求创建或切换 Windows 用户。不得将 DW 的整个 HOME、`.codex` 或日常 Orca 数据挂入实验容器；容器边界需经 G03 实测，不能仅凭容器存在宣称隔离。
 
 ### 1.2 同一 checkout 的不同 profile 必须串行
 
@@ -118,13 +122,13 @@ Worker 报告完成会进入原生生命周期，但不替代你的候选验收�
 | 身份 | 来源 | 是否修改 | 实验地位 |
 |---|---|---|---|
 | D 日常环境 | 你现在正在使用的安装／源码版及配置 | 不直接修改其状态，不在其中做危险实验 | 被保护的真实日常环境，不额外重复计数 |
-| CURRENT 当前方案 | 在隔离环境按冻结版本 M＋实际 Kit K 复现你现在的工作方式 | 不改提示词、规则或策略；必要环境适配单列 | **必做主对照：现状基线** |
+| CURRENT 当前方案 | 在实验容器复现 Orca 1.4.188＋当前生效的一条内置提示词、长期记忆及读取/触发记忆的提示词钩子＋惯常操作 | 保存经确认的起点，不顺手优化；Windows→Linux/无头适配单列 | **必做主对照：现状基线** |
 | KERNEL 新版本 | Fork 从 U 派生，G05–G08 修改，G09 冻结候选 C | 允许本版最小改动；正式批次冻结 | **必做主对照：改进方案** |
 | CODEX 原生 Codex | 在干净环境直接运行原生 Codex | 不加载 Orca、Kit、Kernel；不人为削弱原生正常能力 | 可选、单列，不是主对照与放行前提 |
 
-**版本记号：** M＝当前实际 Orca 版本／构建及运行方式；K＝当前实际生效的 Kit 与配置快照；U＝Fork 的上游起点；C＝Kernel 候选提交；P＝业务目标仓库起点。C 是提交记号，不再是旧版的实验组名。
+**版本记号：** M＝Orca 1.4.188 的实际构建与运行方式（记录宿主 Windows 和容器 Linux/无头差异）；K＝经确认的内置提示词、长期记忆与提示词钩子起点；U＝Fork 的上游起点；C＝Kernel 候选提交；P＝业务目标仓库起点。K 不要求独立 Kit.zip、脚本包或另一个系统。C 是提交记号，不是实验组名。
 
-**CURRENT 必须忠实于“我现在用的”。** 记录实际 M、K、钩子、全局规则、模型设置和惯常操作；只去除认证秘密、历史答案和不属于配置的运行残留。不能把它升级成另一版 Orca、重写 Kit，再称为当前方案。实验环境中的复现需要你确认；不把正在工作的 D 直接用作可破坏测试靶。
+**CURRENT 必须忠实于“我现在用的”。** 记录 M、三项配置的真实加载来源/触发机制、模型设置和惯常操作。保留通用协作经验；去除秘密、认证、本轮答案及不应跨轮继承的会话残留。每轮从经确认起点取得独立副本，允许当前流程在本轮正常更新记忆，但不自动传播到下一轮。不得升级 Orca 或重写提示词来迁就实验；不能把普通提示词约定冒充硬拦截。来源/导出不明即记录未知，不编造路径，不复制整个日常数据目录。
 
 U 优先与 M 对应的源码基线一致或尽可能接近。若 M 的精确源码不可得、两边版本不同或运行方式无法完全一致，仍可比较“当前整套方案 vs 新版本”的实际使用效果，但必须列出差异，不能把所有增益单独归因于 Kernel。不要为追求相同 U 反过来修改真实 CURRENT；也不因此增加第三套对照。
 
@@ -132,7 +136,7 @@ U 优先与 M 对应的源码基线一致或尽可能接近。若 M 的精确源
 
 **被开发的业务目标仓库** 是每轮任务的独立副本，与工具 Fork 分开。开发 Fork 使用稳定工具；未经验证的 Kernel 不能成为开发自己的唯一运行和恢复手段。
 
-建议在实验用户自己的主目录内使用：
+建议在实验容器非 root 用户的独立 HOME 下使用（实际路径以容器配置与运行结果核验；不是宿主 DW 目录）：
 
 ```text
 OrcaLab/
@@ -149,39 +153,33 @@ OrcaLab/
   # 只有启用可选参照时，才增加 CODEX 的独立配置和目标目录。
 ```
 
-目录名称不是给旧版本强加新 profile 能力。CURRENT 若没有可靠的独立 profile 支持，按 R1/R2 用隔离系统身份或干净 VM 复现；不能让它退回连接 D。不要共享可写 node_modules、构建输出、测试数据库和端口。依赖下载缓存可以复用，但不得夹带任务答案，冷热条件需一致。
+目录名称不是给旧版本强加新 profile 能力。CURRENT 在容器独立 HOME 内按 1.4.188 的真实入口复现；无法忠实复现时记录具体缺口，再提议 VM，不回退连接 D。不要共享可写 node_modules、构建输出、测试数据库和端口。依赖缓存可以复用，但不得夹带答案，冷热条件一致。
 
 CODEX 仅在你明确批准时运行；它不要求新建任何 Orca 实例。其模型、版本、权限和原生子 Agent 设置在启动前记录，既不自动禁用正常原生功能，也不外接你的多 Agent Kit。
 
-### 2.2 选择树
+### 2.2 环境选择（用户已决定 Docker-first）
 
-**路线 R1：独立非管理员系统用户＋原生桌面（默认开发路线）。**
+**R4 Docker：本轮唯一主路线。** 宿主 Windows 日常 Orca 保持原状。实验 Orca、Codex、独立 HOME、记忆副本和目标仓库在容器内，以非 root 用户运行；用户不切换 Windows 登录。G00 只读核对 Docker Desktop/Engine/Compose、当前 context 与容器模式、WSL/虚拟化、资源和代理。缺安装、需管理员/系统功能/重启时列出事实，不自行实施。
 
-由你通过系统支持的账户设置创建实验用户，登录后重新确认实际主目录、Node、Git、Orca CLI 和代理配置。不要复制日常整个 HOME、.codex 或 Orca profile。必要认证通过工具自己的正常登录配置，由你操作，不向 Agent 粘贴 token。
+G00 放行后按 G01–G04 逐步准备最小 Dockerfile、Compose 和启动说明。先核对 v1.4.188 对应资料及选定 U，CURRENT 不能使用 latest。初期一套 Orca 及其 Worker 在一个实验容器内，复用 Orca Worktree；不创建每 Agent 一容器的调度器。两组使用相同容器运行方式和资源，串行试验。
 
-原用户与实验用户的目录访问权必须检查，不能把“换了用户名”当成所有文件都不可访问。只允许实验用户访问授权实验源代码和目标副本；日常密钥目录、生产部署配置不应进入它的权限范围。
+**R2 VM：仅作备选。** 仅在普通权限下无法运行或无法忠实复现 CURRENT 时，提交准确错误和已尝试的有限修复，再提议切换。未经批准不安装 VM 栈，不同时建设两套环境。
 
-**路线 R2：干净虚拟机/已有虚拟化环境＋快照（最便于严谨重复对照）。**
+**R1 独立 Windows 用户：不再是前置要求。** 历史 R1 方案保留为背景，当前不创建、不要求用户切换。容器内非 root 用户与独立 HOME 是本轮要求。
 
-使用可用且受支持的虚拟化工具，不预设你的 Windows 版本支持某一产品。关闭不必要的共享磁盘、剪贴板和宿主凭证透传；VM 内使用非管理员账户。安装工具、构建基线、完成必要认证后，在尚无题目、解答和运行历史的状态下制作私有起始快照。每次实验恢复起点，导入同一规则的组别配置与目标副本，导出脱敏结果后再恢复。快照含登录状态时视为秘密资料，不能公开。
+**R3 日常用户多 profile：仅用于受限只读观察。** 它不替代实验容器，不在日常 profile 启动未经验证的实验 Codex。WSL 是 Docker 后端条件，不等于自动切断宿主磁盘与互操作通道。
 
-CURRENT/KERNEL 正式主对照使用相同 VM 配置、资源和运行方式；不拿宿主上的日常方案与 VM 中的新版本直接比较耗时。若不可避免地存在版本／宿主差异，应单列限制并仅作整套方案比较。可选 CODEX 也应尽可能复用同样资源条件，但其缺失不阻塞主实验。不能以恢复快照替代模型服务端数据／记忆政策。
+### 2.3 基线与每轮复位
 
-**路线 R3：同一日常用户＋多个 profile（仅受限开发/观察）。**
+保存经确认的三项起点：一条实际生效的内置提示词、保留通用经验的长期记忆、触发/读取记忆的提示词钩子。三者分别注明真实来源和保存方法；无法导出或确认加载时列为未知。不得将普通 AGENTS.md、模型内置指令或状态 hooks.json 未经核对就互相替代。
 
-可用于不启动模型的源码阅读、构建和初步 CLI 路由实验。只有在 G03 已证明 U 的 Agent 主目录、全局规则、会话与回写无串线后，才允许进入完整执行；未证实就升级到 R1/R2，不修改日常 .codex 以迁就实验。
+每轮使用独立实验 HOME、Orca 状态、记忆副本和目标 clone。允许 CURRENT 原有流程在本轮正常更新记忆；下轮回到经确认的起点，不自动继承本轮答案、会话或经验增量。CURRENT/KERNEL 的通用经验、组别差异及更新权限在 G04 明确。不可导出的提示词/记忆机制不能用新建 Kit 假装等价。
 
-**路线 R4：Docker（可选无头实验，不作为桌面二开的强制前提）。**
+禁止挂载或复制整个宿主 HOME、DW/.codex、日常 Orca 数据、日常业务仓库或 Docker socket。只按经确认的清单导出必要配置/通用经验到私有起点；本轮未执行导出。秘密和认证不得进入 Git、镜像层或公开报告，按正常认证流程在运行时取得。
 
-官方有 headless Linux 路线，但仍涉及 Electron 依赖、Xvfb、AppImage 解包等。可以复用，不在本版自建镜像平台。[S25] 详细准入和步骤见附录 B。
+复位仅处理已识别且授权的本项目容器/卷/目录；先停止并确认无活跃写入者，保留本轮证据，再使用干净起点。不得全局 prune、删除未知卷或复制已运行 profile。容器停止/重建不证明外部卷已复位，必须在 G03 用跨轮标记验证。
 
-WSL 是操作系统/工具链组合，不自动是安全沙箱。默认磁盘挂载和互操作可能使 Linux 侧仍能访问 Windows 侧；另一个发行版不自动切断这些通道。[S32]
-
-### 2.3 正式实验怎样保持干净
-
-CURRENT/KERNEL 使用不同 OS 用户，只能解决组间的一部分隔离，同组第二次仍可能读取第一次历史。选择并记录一种重置方案：恢复干净 VM 起点；或使用新的实验用户/已验证的实验 home 与完整状态清单。手工重置只针对明确的实验范围，并要求无活跃进程、有备份、能验证内容；不提供删除整个 .codex 的快捷修复。
-
-**禁止把已运行的 profile 复制成新试验** ，特别是运行元数据、端点、认证能力和未清理任务。仅可复用已审查的配置模板；认证由正常方式取得，不能复制别人 terminal 的派发能力。
+禁止默认 privileged、关闭 sandbox 或开放公网控制口；宿主如需访问，只绑定经批准的 loopback 端口，另核对容器内实际监听。不能用 pairing-address 代替绑定范围验证。正常权限失败时保留证据，有限修复后再提 VM，不持续扩大容器工程。
 
 ---
 
@@ -189,22 +187,22 @@ CURRENT/KERNEL 使用不同 OS 用户，只能解决组间的一部分隔离，�
 
 ### 目标与入口
 
-不要求已有 Fork。目标是拿到本机事实，而不是先安装工具。G00 的默认授权只有只读盘点；备份、创建用户和收费运行需要分别确认。
+不要求已有 Fork。目标是拿到本机事实，而不是先安装工具。G00 的环境授权只有只读盘点；本轮已授权修改现有手册和交接。安装、启动容器/收费任务、系统功能或管理员变更、备份需对应批准。
 
 ### 你要做
 
-确认你日常使用的是哪一个 Orca 窗口/安装包；告诉 Agent 哪些目录不能触碰。选择 R1 或 R2 作为完整实验路线；安排必要的日常应用退出/冷备份窗口，但不要立即停止正在工作的任务。
+确认你日常使用的是哪一个 Orca 窗口/安装包；告诉 Agent 哪些目录不能触碰。已选择 Docker-first，不要求 Windows 账户切换。先确认 Engine 可用；需要系统变更时列出准确人工动作，不能立即停止日常任务或复制日常配置。
 
 ### Agent To-Do
 
 - [x] **G00.01** 识别真实 OS、架构、shell，区分 Windows App、Git Bash、WSL 和远端运行。没有证据不假定是纯 Windows。
 - [x] **G00.02** 只查询 Orca/Node/Git/pnpm/Codex 命令的实际解析位置、已知版本；未知命令先查路径，不贸然启动。
-- [ ] **G00.03** 从已确认的应用设置/运行路径定位 D 的 userData、日常 Agent 主目录、实际 Kit 来源。只报告路径类别、版本/摘要，不打印认证内容。
+- [ ] **G00.03** 从已确认的应用设置/运行路径定位 D 的 userData、日常 Agent 主目录以及一条内置提示词、长期记忆、提示词钩子的真实来源和触发方式；不寻找独立 Kit。只报告路径类别、版本/摘要，不打印认证内容。
 - [x] **G00.04** 记录与路由、代理、setup 有关的环境变量是否存在，只显示名称。特殊关注继承的 ORCA 环境、CODEX_HOME、HOME/USERPROFILE、WSL、ORCA_INTERNAL_DEV_SETUP。
 - [x] **G00.05** 对用户指定的日常仓库只读检查未提交修改；记录分支与状态，不搜遍整个磁盘，不读业务秘密。
-- [ ] **G00.06** 检查可用空间、网络/代理条件、当前后台 Agent、允许使用的模型与费用边界。预算未批准，标为未批准。
+- [x] **G00.06** 只读检查 Docker Desktop/CLI/Engine/Compose、context/实际容器模式、WSL/虚拟化、资源、代理、后台 Agent 与模型/费用边界。Engine 不可达及容器内未知项明确登记；预算未批准。此勾选表示前置检查已执行，不表示 Engine 或 G00 通过。
 - [x] **G00.07** 提出一份冷备份方案：停止的是哪些已确认进程、复制哪些状态、放在哪里、何时恢复验证。运行中数据库普通复制不直接当有效备份；配置快照不一定包含系统钥匙串。
-- [ ] **G00.08** 提交隔离选择和未确定事项。必要备份经批准后执行，恢复验证在临时实验位置进行，不覆盖 D。
+- [x] **G00.08** 记录用户已选择 Docker-first，提交具体阻塞和未知项；必要基线保存/备份在确认范围后执行，恢复验证限实验副本，不覆盖 D。此勾选不代表 G03 隔离通过。
 
 ### 参考命令：只读定位
 
@@ -238,9 +236,9 @@ Linux 外部 shell 的 `orca` 可能是读屏软件，先定位，不直接执�
 
 ### 产物与通过标准
 
-产物只需一张环境表：D 版本/位置、实际系统主目录、不可触碰范围、K 来源、实验路线、备份状态、未知项。保存在本手册或一个脱敏交接中。
+产物只需一张环境表：D 版本/位置、实际 home、保护范围、CURRENT 三项配置来源、Docker 前置检查、备份/导出状态、未知项。保存在本手册或一个脱敏交接中。
 
-通过要求：知道日常环境是什么、实验将在哪里运行、关键数据如何保护；所有未知项有后续核查位置。不能定位 D/K 或没有可用隔离方式时阻塞，不进入自动安装。
+通过要求：知道日常环境是什么、实验将在哪里运行、关键数据如何保护；所有未知项有后续核查位置。Docker Engine 不可达、CURRENT 来源/导出机制未确认或无法准备受限实验时阻塞，不进入自动安装；独立 Windows 用户和独立 Kit 不再是阻塞条件。
 
 ### 失败处理
 
@@ -251,7 +249,7 @@ Linux 外部 shell 的 `orca` 可能是读屏软件，先定位，不直接执�
 ```text
 只执行 G00。先阅读本手册的角色边界和隔离修正，做只读盘点。
 不要安装、创建 Fork、改全局环境、启动收费任务或打印凭证。
-输出真实 OS/运行方式、D 与 Kit 来源、不可触碰范围、隔离选择和未知项。
+输出真实 OS/运行方式、Docker 前置检查、CURRENT 三项配置来源、保护范围和未知项。Docker-first 已确定，不寻找 Kit.zip，不要求 Windows 换用户。
 需要备份时先说明范围与副作用，获得授权后只在已批准位置操作。
 提交“G00 待验收/阻塞”，不要宣布后续关卡完成。
 ```
@@ -262,70 +260,27 @@ Linux 外部 shell 的 `orca` 可能是读屏软件，先定位，不直接执�
 
 ### 入口与人工动作
 
-G00 通过；实验账户或 VM 路线已批准。你按附录 B 准备实验身份，再在 GitHub 完成 Fork，确认名称和可见性。公开 Fork 不放私有 Kit、业务样例、安装认证或原始日志；这些只留在授权私有位置。
+G00 通过后按附录 B 准备 Docker-first 最小配置，核对 1.4.188 资料及所选 U。容器内使用非 root 实验身份；Fork 创建、名称与可见性按原授权规则确认。私有提示词/记忆起点、业务样例、认证与原始日志不放公开 Fork 或镜像层。
 
 ### Agent To-Do
 
-- [ ] **G01.01** 在实验环境检查真实用户与主目录，不因为窗口变化就默认身份已切换。
+- [ ] **G01.01** 审查容器运行用户、独立 HOME/Codex home、挂载和端口；G02 运行后实测 UID/路径。不创建 Windows 实验用户，不用配置文件代替实测。
 - [ ] **G01.02** 创建一个保留上游历史的 Fork；origin 指向你的仓库，upstream 指向 stablyai/orca。取消额外“原生对照仓库”的强制建设。
-- [ ] **G01.03** 记录 CURRENT 的真实 M：版本、发行包／提交或可获得的校验摘要、启动方式和实际执行器。不可得的字段写未知，不用最新 U 冒充 M。
+- [ ] **G01.03** 固定 CURRENT 的 M=Orca 1.4.188：核对同版本 Linux 发行包/源码、下载来源、实际执行器与启动方式，登记相对 Windows 日常方式的差异。不可得写未知，不用 latest 或最新 U 替换 M。
 - [ ] **G01.04** 明确选择 U，优先对应 M；从 U 建立 Kernel 分支，保留起点记录。此时不改功能，G02 就在这份 Fork 上验证 U。M/U 差异预先登记。
-- [ ] **G01.05** 保存实际 K：真正生效的提示词、钩子、参数、脚本与工作方式。区别提醒、可执行门禁与人工约定；CURRENT 不顺手优化。
+- [ ] **G01.05** 保存经确认的 K：内置提示词、长期记忆与提示词钩子起点；分别记录来源、触发及导出方法。保留通用协作经验，排除秘密与本轮答案；不复制整个 DW/.codex 或日常 Orca 数据。区分提示词与可执行门禁；无法等价导出则登记阻塞。
 - [ ] **G01.06** 阅读 AGENTS.md、贡献指南、package.json、setup、开发启动与 CLI 安装脚本，再安装依赖。记录外部命令和可能写入位置。
 - [ ] **G01.07** 审查 Actions、自动更新、遥测、app identity、URI scheme。初期只做源码版，不触发 installer/release，不覆盖 D。
 - [ ] **G01.08** 输出一张复用／新增差异表及 CURRENT 复现方法。默认沿用基础设施；不再准备第三套原生 Orca 性能环境。
 - [ ] **G01.09** 本批不自动合并新上游。换 U/M/K 时重新核对相关 G02–G04 及实验规格，旧结果分批保存。
 
-### Fork 参考命令
+### Fork 与容器准备约定（G00 放行后才执行）
 
-先用网页 Fork。以下在实验用户下执行，逐条检查；已有目录、branch 或 remote 不强制覆盖。只需要 Kernel 一份 checkout，U 的冒烟就在功能修改前完成。
+G01 先核对 v1.4.188 的固定资料、源码提交和所选 U，审查构建/setup/全局 CLI/发布副作用，再在获准位置准备最小 Dockerfile、Compose 与启动说明。镜像内工具依赖可在构建阶段安装，Orca/Codex 运行必须切换到非 root 用户；不把认证、日常配置或记忆原始资料放入构建上下文或镜像层。
 
-```powershell
-$ErrorActionPreference = 'Stop'
-$Lab = Join-Path $HOME 'OrcaLab'
-$Kernel = Join-Path $Lab 'code\orca-kernel'
-New-Item -ItemType Directory -Force -Path (Join-Path $Lab 'code') | Out-Null
-if (Test-Path $Kernel) { throw '目标已存在，先检查，不覆盖' }
-$ForkUrl = Read-Host '填写 Fork HTTPS 地址（不要含 token）'
-git clone $ForkUrl $Kernel
-if ($LASTEXITCODE -ne 0) { throw 'Fork clone 失败' }
-git -C $Kernel remote add upstream https://github.com/stablyai/orca.git
-if ($LASTEXITCODE -ne 0) { throw 'upstream 已存在或添加失败，先核查' }
-git -C $Kernel fetch upstream
-if ($LASTEXITCODE -ne 0) { throw 'fetch 失败' }
-git -C $Kernel log upstream/main -8 --oneline
-$U = Read-Host '填写已选的上游完整 SHA；不要把当前 HEAD 自动当作 M'
-if ($U -notmatch '^[0-9a-fA-F]{40}$') { throw 'SHA 格式错误' }
-git -C $Kernel cat-file -e "$U^{commit}"
-if ($LASTEXITCODE -ne 0) { throw '该提交本地不存在，停止核查' }
-git -C $Kernel switch -c kernel/v0.1 $U
-if ($LASTEXITCODE -ne 0) { throw '创建分支失败，先检查已有分支' }
-git -C $Kernel status --short --branch
-git -C $Kernel remote -v
-```
+Fork 名称、可见性、外部创建和 push 按原放行规则确认；保留当前规划仓库及其历史，不覆盖目录、不 force push、不 mirror。只建立一个保留上游历史的 Kernel Fork，origin 指向获准仓库，upstream 指向 stablyai/orca；U 使用明确完整 SHA，不能把 latest/main 自动当作 M。
 
-Bash 对应操作：
-
-```bash
-set -euo pipefail
-LAB="$HOME/OrcaLab"
-KERNEL="$LAB/code/orca-kernel"
-mkdir -p "$LAB/code"
-[ ! -e "$KERNEL" ] || { echo '目标存在，停止'; exit 1; }
-read -r -p 'Fork HTTPS URL（不含 token）: ' FORK_URL
-git clone "$FORK_URL" "$KERNEL"
-git -C "$KERNEL" remote add upstream https://github.com/stablyai/orca.git
-git -C "$KERNEL" fetch upstream
-git -C "$KERNEL" log upstream/main -8 --oneline
-read -r -p '已选上游完整 SHA（核对与当前 M 的关系）: ' U
-[[ "$U" =~ ^[0-9a-fA-F]{40}$ ]] || { echo 'SHA 格式错误'; exit 1; }
-git -C "$KERNEL" cat-file -e "$U^{commit}"
-git -C "$KERNEL" switch -c kernel/v0.1 "$U"
-git -C "$KERNEL" status --short --branch
-git -C "$KERNEL" remote -v
-```
-
-上面只建立 Fork 并固定 U，不迁移或修改当前日常安装。首次外部 push 经授权；不使用强推、mirror、全局 rewrite 或向 upstream 写入。Fork/remote 原理见 [S28]。
+容器使用独立 HOME、项目源码与目标 clone；后续 Git 命令在实际容器目录内逐条执行并检查退出码。宿主仅进行已批准的容器控制，不运行原 Windows 实验用户模板来复制 DW 配置。G01 准备文件并不证明构建、启动或 Worker 成功，这些留给 G02。
 
 ### 阅读入口与通过标准
 
@@ -349,12 +304,12 @@ git -C "$KERNEL" remote -v
 
 ### 入口与人工动作
 
-G01 通过。先在尚未加入 Kernel 功能的 Fork 上验证 U，使用临时 base-smoke profile。**这不是 CURRENT 组，也不是第三个对照组；它只建立环境／上游功能起点。** 必须在实验账户/VM 内运行，你批准安装与一次小额模型冒烟；正常登录认证，确认无日常仓库混入。[S14]
+G01 通过。先在尚未加入 Kernel 功能的 Fork 上验证 U，使用临时 base-smoke profile。**这不是 CURRENT 组，也不是第三个对照组；它只建立环境／上游功能起点。** 必须在实验容器非 root HOME 内运行，你批准构建/安装与小额模型冒烟；正常认证，确认没有日常目录或 Docker socket 挂载。[S14]
 
 ### Agent To-Do
 
 - [ ] **G02.01** 从 U 的 package.json 读取 Node/pnpm/脚本要求。此次观察的 main 为 Node 24、pnpm 12，但最终以 U 为准，不对全局工具盲目升级。[S02]
-- [ ] **G02.02** 仅在实验源码目录安装锁定依赖。先查 setup 和安装脚本，再运行；记录 lockfile 是否意外变化。
+- [ ] **G02.02** 仅在容器实验源码目录安装锁定依赖。先查 setup 和安装脚本，再运行；记录 lockfile 是否意外变化。
 - [ ] **G02.03** 创建 base-smoke profile；从干净终端显式绑定启动路径和 CLI。继承的远程选择/身份环境不能被当成当前实例授权。
 - [ ] **G02.04** 构建 CLI，检查全局别名副作用。使用 checkout 内包装，不依赖全局 orca-dev。
 - [ ] **G02.05** 启动未修改源码；Agent 自动启动时用上游后台启动约定，避免抢占用户窗口。[S01]
@@ -365,65 +320,15 @@ G01 通过。先在尚未加入 Kernel 功能的 Fork 上验证 U，使用临时
 - [ ] **G02.10** 对另一条明确批准的短任务测试停止；保留工作区和结果，记录真实仍存活/未知资源，不把停止当删除。
 - [ ] **G02.11** 关闭该源码应用后运行相关原生检查，再启动时由 dev 入口恢复 Electron 原生依赖；同一 checkout 不边运行边重建 ABI。
 
-### 启动参考命令
+### 启动约定（G02，非本轮 G00 操作）
 
-以下只用于 U 的 BASE-SMOKE 和后续 Kernel 源码版；CURRENT 仍按真实 M 的启动方式与可用隔离能力复现，不能直接套用这些命令声称等价。
+先审查 G01 已准备的最小 Dockerfile/Compose，核对固定版本、非 root UID、独立 HOME、挂载/卷清单、loopback 发布、资源和代理。构建与启动命令必须来自实际配置，不使用文档占位命令冒充已运行。不要为构建成功放宽 sandbox 或挂 Docker socket。
 
-PowerShell，实验账户下：
+在容器内从未修改 U 的 package.json 读取 Node/pnpm 与锁定构建命令；通过原有开发入口或经验证的 headless 入口运行 BASE-SMOKE。后者若只能运行发行包，不能拿 M 的成功替代未修改 U 的源码冒烟。CURRENT 独立采用固定 1.4.188 的真实可用入口，禁止 releases/latest。
 
-```powershell
-$ErrorActionPreference = 'Stop'
-$Lab = Join-Path $HOME 'OrcaLab'
-$Repo = Join-Path $Lab 'code\orca-kernel'
-$Profile = Join-Path $Lab 'profiles\base-smoke'
-New-Item -ItemType Directory -Force -Path $Profile | Out-Null
-Set-Location $Repo
-$env:ORCA_DEV_USER_DATA_PATH = $Profile
-$env:ORCA_DEV_INSTANCE_LABEL = 'BASE-SMOKE'
-# Agent 自动启动时；用户主动查看窗口可按实际需要处理：
-$env:ORCA_BACKGROUND_LAUNCH = '1'
-pnpm install --frozen-lockfile
-if ($LASTEXITCODE -ne 0) { throw '安装失败' }
-pnpm run build:cli
-if ($LASTEXITCODE -ne 0) { throw 'CLI 构建失败' }
-pnpm dev
-```
+记录容器内实际程序、UID、HOME、Codex home、profile、CLI 与 runtimeId。同一 checkout 的不同 profile 串行；运行中不重建共享 native ABI。CLI 使用该容器自身解析到且核对过的显式入口，status 必须 runtime.reachable=true，app/runtime/进程相互对应，不回退连接日常 Orca。
 
-Bash：
-
-```bash
-set -euo pipefail
-LAB="$HOME/OrcaLab"
-REPO="$LAB/code/orca-kernel"
-PROFILE="$LAB/profiles/base-smoke"
-mkdir -p "$PROFILE"
-cd "$REPO"
-export ORCA_DEV_USER_DATA_PATH="$PROFILE"
-export ORCA_DEV_INSTANCE_LABEL='BASE-SMOKE'
-export ORCA_BACKGROUND_LAUNCH=1
-pnpm install --frozen-lockfile
-pnpm run build:cli
-pnpm dev
-```
-
-参考查询（PowerShell，新终端要重新设置变量）：
-
-```powershell
-$Lab = Join-Path $HOME 'OrcaLab'
-$Repo = Join-Path $Lab 'code\orca-kernel'
-$env:ORCA_DEV_USER_DATA_PATH = Join-Path $Lab 'profiles\base-smoke'
-$Cli = Join-Path $Repo 'config\scripts\orca-dev.mjs'
-$Raw = & node $Cli status --json
-if ($LASTEXITCODE -ne 0) { throw '查询失败' }
-$Status = $Raw | ConvertFrom-Json
-$Status.result.runtime | Select-Object state,reachable,runtimeId
-$Status.result.app | Select-Object running,pid
-if ($Status.result.runtime.reachable -ne $true) { throw '运行实例未就绪；不派发' }
-node $Cli worktree ps --json
-node $Cli terminal list --json
-```
-
-Bash 使用 `node "$REPO/config/scripts/orca-dev.mjs" status --json` 等等价调用，先重新设置同一 profile。不要把完整 bootstrap 文件打印出来。[S03–S07]
+首次按顺序验证：构建/启动 → Codex 配置 → 一条监督 Worker → 停止；G03 再验证隔离和复位。保留实际命令、退出状态与脱敏记录；没有执行的步骤仍为未测。
 
 ### 监督冒烟怎么做
 
@@ -454,7 +359,7 @@ Bash 使用 `node "$REPO/config/scripts/orca-dev.mjs" status --json` 等等价�
 ### 给 Agent 的指令
 
 ```text
-只执行 G02，在实验账户/VM 的同一 Kernel Fork 中使用尚未改功能的 U；这只是技术冒烟。
+只执行 G02，在非 root 实验容器的 Kernel Fork 中使用尚未改功能的 U；这只是技术冒烟。
 先按 U 的 AGENTS 与 package.json 安装构建，显式 profile 和 checkout CLI。
 执行一次受监督的只读 scratch 任务和一次明确授权的停止试验。
 记录实际 runtime、Task/Dispatch、setup 与残留资源；不伪造身份，不使用日常 profile。
@@ -468,21 +373,21 @@ Bash 使用 `node "$REPO/config/scripts/orca-dev.mjs" status --json` 等等价�
 
 ### 入口与人工动作
 
-G02 已在实验身份内通过。你允许对一次性实验配置放置非敏感标记，并准备查看日常设置是否受影响。任何创建 OS 用户、VM 快照或权限修改都由明确授权驱动；Agent 不自行变更系统访问权。
+G02 已在非 root 实验容器通过。你允许在实验配置和记忆副本放置非敏感标记，并核对日常设置未受影响。本关实测 Docker 挂载、HOME、回写和复位；不修改 Windows 账户/权限，不创建备选 VM。
 
 ### Agent To-Do
 
-- [ ] **G03.01** 记录 D、临时 base-smoke、CURRENT-smoke、KERNEL-dev 的系统用户、实际 home、程序／源码来源、profile、CLI 与运行方式。只有 CURRENT/KERNEL 参加主比较；此时 Kernel 尚无功能修改。
+- [ ] **G03.01** 记录 D、临时 base-smoke、CURRENT-smoke、KERNEL-dev 的宿主/容器身份、UID、实际 HOME/Codex home、程序来源、profile、CLI、挂载、卷与端口。只有 CURRENT/KERNEL 参加主比较；此时 Kernel 尚无功能修改。
 - [ ] **G03.02** 逐一读取 runtimeId/进程/可达性，核对实际目标。不同 profile 不是同一个 runtimeId 的别名。
 - [ ] **G03.03** 在实验版注册 scratch、改一个普通设置、添加一个非敏感标记；核对 D 对应仓库列表和设置没有改变，不要求 D 的运行日志绝对不变。
 - [ ] **G03.04** 从外部控制终端、协调终端、Worker 终端分别查询身份。WSL Worker 必须用其实际注入的命令，不能替换成 Linux PATH 中同名程序。
 - [ ] **G03.05** 在 U 定位 Codex home/资源镜像/会话桥接/设置回写调用链；检查实际 Worker home 与符号链接、junction、复制来源。只记录路径和摘要，不读认证内容。
-- [ ] **G03.06** 验证 CURRENT 忠实加载已冻结的 K 和现用全局配置，不混入 Kernel 实验规则；KERNEL 不再额外加载完整旧 Kit。临时 BASE-SMOKE 不带 Kit。检查用户级 AGENTS、skills、hooks、MCP 与默认提示；只去除历史答案，不偷偷削弱 CURRENT。
-- [ ] **G03.07** 在实验用户内测试无害配置标记与一次短会话的传播范围。测试退出后核查 system home 是否新增会话/变更，明确后续每轮要恢复哪些状态。
+- [ ] **G03.06** 验证 CURRENT 实际加载经确认的内置提示词、长期记忆副本及提示词钩子，并保留现有必要配置与惯常操作。核对提示词触发与命令 hooks 的区别。KERNEL 不重复注入 CURRENT 专有流程；通用经验与组别差异明确记录。BASE-SMOKE 不注入 K。
+- [ ] **G03.07** 在容器内用无害配置/记忆标记及短会话测试传播；核对宿主日常 home 未被回写。允许本轮正常记忆更新，检查更新只在本轮副本；按支持的保存/导出方法处理运行中数据库，不复制活跃 SQLite 充当一致快照。
 - [ ] **G03.08** 验证 Worker 目标路径在本轮授权目标内；独立 clone 不存在共享 alternates、指回日常仓库的链接或错误 push remote。
 - [ ] **G03.09** 退出实验实例后，用绑定同一 profile 的 status 查询，必须不可达且不回退到 D。不要用会重新启动应用的 open 命令来做此负例。
 - [ ] **G03.10** 重新启动仍恢复自己的状态；D 可继续使用。BASE-SMOKE、KERNEL-dev 和正式 Kernel profile 共用 checkout 时只串行切换；CURRENT 保持独立真实启动入口。
-- [ ] **G03.11** 选定正式试验重置方式，模拟“上一轮结束→新一轮”，核查旧任务会话、Kit 残留、端口和目标产物不继承。
+- [ ] **G03.11** 模拟“上一轮结束→新一轮”：恢复经确认的提示词/记忆/钩子起点，新建独立 HOME/状态/目标副本；旧答案、会话和本轮记忆增量不得自动继承，通用经验起点仍保留。仅处理授权项目资源，不 prune、不删未知卷。
 - [ ] **G03.12** 输出四层结论：应用状态、CLI 路由、Agent 配置/历史、文件访问边界。每层写“已验证/有限保证/未支持”，不以总括的“已隔离”掩盖缺口。
 
 ### 只读检查链接示例
@@ -505,13 +410,13 @@ Bash 可对这些具体路径使用 `ls -ld`、`readlink` 和只读摘要。不�
 | 检查点 | 通过条件 | 不合格时 |
 |---|---|---|
 | runtime 路由 | 绑定实例、实际进程、profile 对应 | 停止，修 CLI/profile |
-| Worker 配置 | 来源可说明，组别指令没有串线 | 使用独立用户或恢复干净 VM |
+| Worker 配置 | 三项来源可说明，组别指令没有串线 | 修正容器配置/副本；不能忠实复现时提议 VM |
 | 会话与回写 | 新运行不继承旧答案，修改不写向 D | 不能仅换 CODEX_HOME，核查真实调用链 |
 | 文件访问 | 没有无意共享日常可写目录 | 移除共享或收窄权限，验证后继续 |
 | 关闭负例 | CLI 不回退到其他运行实例 | 记录错误，不继续派发 |
 | 重复运行 | 重置后起点可比且没有旧状态 | 修复 reset 流程，不删日常状态 |
 
-配置隔离防串线，独立用户限制部分访问，VM 限制宿主接触；三者都不是本次已完成的安全认证。涉及不可信仓库、安装脚本或更高风险代码时另设安全范围，不能利用“内测”略过。
+配置、非 root 用户、容器挂载/网络边界与复位必须分别验证；Docker-first 的选择不构成已完成的隔离认证。涉及不可信仓库、安装脚本或更高风险代码时另设安全范围，不能利用“内测”略过。
 
 ### 失败处理与 Agent 指令
 
@@ -519,7 +424,7 @@ Bash 可对这些具体路径使用 `ls -ld`、`readlink` 和只读摘要。不�
 只执行 G03。重点复查真实 homedir/.codex、镜像/桥接/回写，而非只看 userData。
 按十二个子步骤留下脱敏证据；不打印 bootstrap token、登录文件或完整环境。
 同一源码 checkout 不并行切换 profile。只能在实验配置里放置无害标记。
-任何层无法证明隔离，就标阻塞并提出 R1/R2 调整，不改日常配置来迁就实验。
+任何层无法证明隔离，就标阻塞，提交容器错误和有限修复结果；必要时提议 VM，不改日常配置、不持续扩大容器工程。
 最后给出分层结论和重置方式，等待用户放行，不开始 Kernel 功能。
 ```
 
@@ -535,22 +440,22 @@ G03 通过。你批准有限目标、预算、实验远端 push 和正常人工�
 
 ### Agent To-Do
 
-- [ ] **G04.01** 冻结 M、K、U、目标起点 P、执行器版本、模型／推理配置、权限和可见工具；明确 M/U 的关系，未知项单列。
-- [ ] **G04.02** 在隔离环境复现你目前实际使用的 M＋K：采用原有提示词、钩子和操作方法，不重写、不故意限制能力；由你确认与平时使用一致。
+- [ ] **G04.01** 冻结 M=1.4.188、K 三项起点、U、P、执行器/模型/推理/权限/工具；记录容器基础镜像版本、资源与启动方式、相对日常 Windows 的适配差异，未知项单列。
+- [ ] **G04.02** 在容器内忠实复现 M＋K：原有内置提示词、通用经验、读取/触发记忆的提示词钩子及惯常操作，不用新 Kit 替代；由用户确认。无法保留真实机制时具体记录，再提 VM，不将不等价结果当 CURRENT。
 - [ ] **G04.03** 选择 T1（边界清楚的可并行修改）、T2（公共契约／先后依赖），写目标、非目标、业务样例和最终验收。
 - [ ] **G04.04** 共同验收对 CURRENT/KERNEL 一致且可理解；评分代码不由被验收 Agent 擅改。隐藏样例不增加隐藏需求。可选 CODEX 使用同一业务验收。
 - [ ] **G04.05** 每轮使用独立业务目标 clone、固定 P 和实验分支；获准 push 时只推实验远端，不误推生产或上游主线。
 - [ ] **G04.06** 对主两组统一实际模型、权限、网络工具、资源上限和人工帮助规则，记录原生子 Agent 设置；工作流本身不同正是比较对象，不强求相同计划。
 - [ ] **G04.07** 事先规定环境失败、限流、超时、取消、人工救场和重跑规则；失败消耗保留。若 M/U 或运行方式不同，报告只能作整套方案比较。
 - [ ] **G04.08** CURRENT 做一次预备冒烟，验证复现及共同验收；G02 已有 U 的技术冒烟，不再新增原生 Orca 组。预备结果不混入正式 12 次。
-- [ ] **G04.09** 区分调试任务和未针对性调优的迁移核查；不将上一轮答案、会话或目录残留带进下一轮。CODEX 不额外成为先决条件。
+- [ ] **G04.09** 每轮采用独立提示词/记忆/钩子副本并允许 CURRENT 在本轮正常更新；结束后保留证据，下轮从经确认的起点重建，不自动带入本轮答案或记忆增量。通用经验保留范围、组间差异、导出/复位方法和实际更新权限写入同一规格；CODEX 不成为前提。
 - [ ] **G04.10** 冻结胜利标准：只用 KERNEL 对 CURRENT 的净收益决定价值门；原生 Codex 即便后来测得更差，也不能代替新旧方案之间的改善。
 
 ### 一份规格就够了
 
 ```text
 主对照：CURRENT vs KERNEL
-CURRENT：M=实际程序版本/构建与运行方式；K=实际生效工作流快照
+CURRENT：M=Orca 1.4.188 及实际构建/运行方式；K=内置提示词＋长期记忆＋提示词钩子起点
 KERNEL：U=上游起点；C=候选提交（G09 前填写并冻结）
 M/U 是否同源同版本；若不同，具体差异与归因限制：
 目标起点 P=；任务=T1/T2
@@ -560,6 +465,7 @@ M/U 是否同源同版本；若不同，具体差异与归因限制：
 总尝试/并发/时长/预算代理：
 正常人工确认与额外救场定义：
 环境失败、重跑和完整起点恢复方法：
+三项配置来源/导出方式、保留通用经验、组间差异、本轮记忆更新权限及跨轮复位：
 可选 CODEX：默认不执行；只有批准后另记条件与预算，不影响主实验。
 ```
 
@@ -972,6 +878,8 @@ G09 记录可信。你决定继续、收缩或停留在实验状态；是否公�
 
 ## 附录 A｜Orca 操作速查：先判上下文，再执行命令
 
+**Docker-first 使用约束：** 以下沿用原稿的命令形状，不是已验证的容器启动说明。实验命令须使用实际容器内的非 root 身份、HOME/profile 与该实例 CLI；Windows PowerShell 示例不能直接当作 Linux 容器命令，也不能指向 DW 日常 home。G01–G03 按固定 M/U 核对后再使用；G00 不创建容器或任务。
+
 ### A1. 外部控制终端与协调 Agent 终端不能混用身份
 
 外部终端用已确认的 checkout CLI 与 profile 做状态核查。需要监督派发时，在同一实验 Orca 识别的协调 Agent 终端里执行；从其真实环境选择命令。WSL 使用实际 `ORCA_CLI_COMMAND`，不要将含参数的命令字符串交给任意 eval。
@@ -1088,18 +996,15 @@ node $Cli orchestration worker-show --dispatch $DispatchId --json
 
 ## 附录 B｜Docker、独立用户与虚拟机的实操准入
 
-### B1. 独立系统用户的操作清单
+### B1. 容器非 root 身份与 Windows 保护
 
-- [ ] 用户在操作系统账户设置中创建实验账户；Windows 选择标准用户而非长期管理员。管理员批准创建账户不意味着 Agent 以后以管理员运行。[S36]
-- [ ] 完整登录该账户后，查询真实身份与主目录；不要只用另一个终端窗口或伪造 HOME 值冒充独立用户。
-- [ ] 在该账户的授权空间 clone、安装工具、登录模型；不导入日常整个 Agent home。
-- [ ] 核查实验用户对日常源码、密钥、网络共享和工作盘的访问权；只开放必要的实验副本。
-- [ ] 明确日常稳定工具如何交付改动到实验空间：例如推送到批准的 Fork 分支，再由实验用户拉取。不要用共享运行时配置同步开发。
-- [ ] 同组重复试验仍要执行 G03 的完整重置；新 userData 不是全系统状态重置。
+- [ ] 不创建独立 Windows 用户；记录日常 D 的当前身份和保护范围。
+- [ ] G00 放行后，容器运行时明确非 root UID、真实 HOME、Codex home、Orca profile；不能只修改 HOME 文本冒充身份隔离。
+- [ ] 源码、目标、记忆和必要配置均为容器内独立副本；只导出经确认的基线项目，不复制整个日常目录。
+- [ ] Windows 稳定 Orca 用于现有协调；未经验证的 Kernel 不作为唯一开发/恢复工具。实验协调和 Worker 身份必须来自容器自身运行实例。
+- [ ] G03 验证链接、挂载、回写与跨轮复位；非 root 标志本身不证明隔离。
 
-Windows 创建/更改类型可参考“设置→账户→其他用户”，实际页面因系统版本与组织策略不同。macOS/Linux 使用对应系统支持的用户管理功能；本手册不要求绕过组织权限或复制某套发行版管理员命令。
-
-### B2. 虚拟机的操作清单
+### B2. 虚拟机备选（未启用，不与 Docker 并建）
 
 - [ ] 确认宿主支持、可用资源、工具来源和许可，不盲目安装新的大型虚拟化栈。
 - [ ] 建立专用实验系统，更新必要运行环境；以非管理员用户执行开发。
@@ -1111,11 +1016,11 @@ Windows 创建/更改类型可参考“设置→账户→其他用户”，实�
 
 快照提供可恢复实验起点，不意味着所有服务端记忆、账号限流或外部缓存都被复位。外部状态需要在结果里说明。
 
-### B3. Docker 路线：只在需要无头实验时采用
+### B3. Docker-first 主路线准入
 
 **本次不提供声称已经验证的 Dockerfile。** 官方 headless 路线可以参考，但你的固定 U、操作系统和认证方式仍需独立验证。不能为了“容器里启动失败”直接使用 `--privileged`、挂载 Docker socket 或默认 `--no-sandbox`。[S25][S31]
 
-- [ ] 确定目的：只运行测试数据库/编译，还是把 CURRENT/KERNEL 两组都放在相同 headless 环境。两者不要混淆。
+- [ ] 已确定目的：CURRENT/KERNEL 两组的实验 Orca、Codex、HOME、记忆副本和目标均在相同容器运行方式下验证；初期一套 Orca 及其 Worker 在一个实验容器内，复用 Worktree。
 - [ ] 固定基础镜像与工具版本，记录 CPU架构、资源限额和构建产物；不使用漂移 latest 作为正式实验唯一依据。
 - [ ] 按 U 的 headless 文档准备 Electron系统依赖、显示支持和 AppImage 解包；不假设普通 node 镜像即可启动。
 - [ ] 用非 root 身份运行，控制文件所有权与资源；可写目录只留给 profile、目标和必要缓存。
@@ -1126,7 +1031,7 @@ Windows 创建/更改类型可参考“设置→账户→其他用户”，实�
 - [ ] 先执行与 G02/G03 相同的启动、监督、停止、配置与会话隔离试验，再进行性能比较。
 - [ ] CURRENT/KERNEL 同容器方式、同资源与依赖；CURRENT 若无法忠实复现，不为使用 Docker 偷换其实际工作方式。容器只回收自身不代表外部 volume 干净；每轮数据卷起点也要固定。
 
-不做宿主无头与桌面混合计时。若选择这条路线，只替换 G00–G04 的运行环境验证，不把 kernel 变成新的容器编排平台。
+不做宿主无头与桌面混合计时。本轮已选择这条路线，只调整 G00–G04 的运行环境验证，不把 kernel 变成新的容器编排平台。
 
 ---
 
@@ -1177,9 +1082,9 @@ Windows 新进程调用沿用仓库共享封装，WSL 使用既有参数构造�
 | CLI查询到日常版 | profile、checkout、全局alias、继承远端选择 | 显式重绑定并复验 | 改个窗口名就继续 |
 | status ok:true但不可达 | result.runtime与实际进程 | 等就绪或查启动失败 | 当作运行成功派发 |
 | 切换 profile 后原先 CLI 路由变了 | 同 checkout 的 out/bin 重写 | 串行或独立 checkout，核验真实实例 | 同目录同时开多个 profile |
-| CURRENT 混入 Kernel 指令，或可选 CODEX 加载 Kit | system .codex 资源、用户规则与钩子 | 独立用户/VM，核验批准的组别配置 | 删除日常规则，或清掉 CURRENT 本应有的 Kit |
+| CURRENT 混入 Kernel 指令，或可选 CODEX 加载 Kit | system .codex 资源、用户规则与钩子 | 核验容器独立 HOME/副本与组别配置，失败后提议 VM | 删除日常规则，或清掉 CURRENT 本应有的 Kit |
 | 新profile看到旧会话 | 会话桥接/回填/真实home | 完整干净起点恢复 | 只清聊天窗口 |
-| 修改实验模型设置影响别处 | 配置回写调用链 | 独立用户后复验 | 声称CODEX_HOME万能隔离 |
+| 修改实验模型设置影响别处 | 配置回写调用链 | 修复容器回写范围后复验 | 声称CODEX_HOME万能隔离 |
 | 原生模块ABI错误 | Node/Electron构建切换 | 关闭同checkout运行，按现有脚本准备 | 一直重装全部工具 |
 | pnpm安装改了lockfile | pnpm版本、U、脚本 | 保留差异，查原因 | 静默提交新锁文件 |
 | Windows setup失败 | shebang/cmd/Git Bash/WSL实际shell | 按上游shell规则修配置 | 假定默认终端就是setup shell |
@@ -1258,7 +1163,7 @@ Windows setup实际选择不一定服从交互终端偏好，需按上游说明�
 上游U仅做技术冒烟和回归。原生Codex默认不执行，可选单列且不阻塞放行。
 所有状态以实际证据为准；不能编造环境、ID、测试、提交或对照结果。
 未经放行不进入下一关；失败在原关原轨修复，不创建新的庞大加固流程。
-先只读盘点日常环境与真实Kit，提出独立实验用户/VM方案；不要安装或启动收费任务。
+先只读盘点 Docker/WSL、日常环境及 CURRENT 三项来源；本轮已选 Docker-first，VM 仅备选，不创建 Windows 用户或 Kit 系统；不要安装或启动收费任务。
 每次按E1提交短交接，等待用户确认。
 ```
 
@@ -1356,6 +1261,7 @@ Windows setup实际选择不一定服从交互终端偏好，需按上游说明�
 
 [S25] 官方headless Linux/Docker与服务暴露说明：
 - https://raw.githubusercontent.com/stablyai/orca/main/docs/reference/headless-linux-server.md
+- 本轮已读取的固定版本参考：https://raw.githubusercontent.com/stablyai/orca/v1.4.188/docs/reference/headless-linux-server.md 。它不是运行验收；其中 latest、root 或对外服务示例不能替代本轮固定版本、非 root、sandbox 与 loopback 限制。
 
 [S26] 打包身份与发布配置：
 - https://raw.githubusercontent.com/stablyai/orca/main/config/electron-builder.config.cjs

@@ -2,6 +2,8 @@
 
 日期：2026-09-06（Asia/Shanghai）。运行状态是本轮查询时的快照。
 
+**阅读顺序：** 下方首次盘点保留为历史证据；其 R1/R2 选择、寻找独立 Kit 和整目录冷备份提案，已被本文件后续“Docker-first 补查与用户决定”取代，不再作为当前行动要求。最新关卡状态见文末交接；不得据历史提案复制/挂载整个日常目录。
+
 ## 本轮计划与范围
 
 一个 Agent 在当前 checkout 的 `docs/g00-project-takeover` 分支完成接手；write_paths 仅 `README.md`、`V01-TODO.md`、`docs/`。顺序：读任务文件 → 只读盘点 → 保护/隔离提案 → 文档验证 → commit/push。本轮不需要 Worker 或集成 Agent。
@@ -62,14 +64,14 @@
 
 发现性 `rg --files` 在只有 LICENSE、没有匹配任务/源码文件时返回 1，表示无匹配，不能当成功能测试失败。未找到祖先目录额外的 AGENTS.md；用户 `.codex/AGENTS.md` 和托管规则已读，与会话给定协议一致。
 
-## 阻塞与后续
+## 首次盘点的阻塞与后续（历史，已由后续决定替代）
 
 - 确认 R1/R2 并准备获准实验身份，检查真实 home、工具及对日常目录的访问边界。当前未进入 G01。
 - 确认 K 是已见协议/配置/工具及惯常流程，还是另有 Kit 文件或仓库；记录未知项，不擅自简化 CURRENT。
 - 备份需确认目标、范围和停机窗口；额外模型预算在对应关卡批准。本轮未启动新模型任务。
 - G01 再确认源码 Fork 的名称、可见性与现有私有规划仓库的关系；不覆盖当前历史或把原生冒烟增加为第三比较组。
 
-## 七行交接
+## 首次盘点交接（历史）
 
 关卡：G00；状态：阻塞；0/11 关通过。
 
@@ -84,3 +86,68 @@
 人工/风险：实验身份待确认，K 尚未完整定位；发现日常 plugins 链接；备份及额外模型预算未批准。
 
 请求：解决 G00 阻塞并由用户放行后进入 G01，不自行跳关。
+
+## Docker-first 补查与用户决定（2026-09-06，当前有效）
+
+本轮从既有 `953282ceed882bb83439e6eea466d314b4cb6cc3`、`docs/g00-project-takeover` 干净工作区继续。仅更新本文件、V01-TODO.md 和 README.md；保留以上历史证据及原始路线图，没有新增规划、容器文件或 Worker。本轮采用用户新定义，不再要求独立 Windows 用户、不寻找 Kit.zip。
+
+### Docker 前置检查
+
+| 检查 | 实际命令 / 证据 | 本轮结论 |
+|---|---|---|
+| Docker Desktop | 安装程序文件版本查询 | `C:\Program Files\Docker\Docker\Docker Desktop.exe`，4.77.0.228796；已安装，未观察到 Desktop/backend 进程 |
+| CLI | 已解析绝对路径下 `docker.exe --version` | 退出 0；29.5.3，build d1c06ef |
+| Compose | 同一 CLI 的 `compose version` | 退出 0；v5.1.4 |
+| Context | `docker context show`、`context inspect desktop-linux`；仅输出名称与端点类别 | 均成功；desktop-linux，指向本地 npipe；无 DOCKER_HOST/DOCKER_CONTEXT 覆盖。表示配置目标是 Linux Engine，不能当作运行模式实测 |
+| Engine | `docker version --format 'client={{.Client.Version}} server={{if .Server}}{{.Server.Version}} os={{.Server.Os}}{{end}}'` | 退出 1，Server 为空：`open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.` 本轮核心阻塞是 Engine 不可达，不是缺 CLI/Compose |
+| 服务 | `Get-CimInstance Win32_Service` 筛选 Docker、WSL、vmcompute、LanmanServer | com.docker.service=Stopped/Manual；WSLService=Running/Auto；vmcompute=Running/Manual；LanmanServer=Running/Auto。单凭 Docker 服务停止不诊断 WSL 后端安装失败 |
+| WSL | `wsl --version`、`--status`、`--list --verbose` | 均退出 0；WSL 2.7.3.0、内核 6.6.114.1-1、WSLg 1.0.73；默认版本 2；Ubuntu、docker-desktop、kali-linux 均 WSL2/Stopped。只列举，未启动发行版 |
+| 编码复核 | 用 ProcessStartInfo、UTF-16 解码同一 WSL 只读命令 | 首次输出因编码乱码，复核后以上版本/状态清晰；未把乱码当 WSL 失败 |
+| 虚拟化/资源 | CIM 与 Get-PSDrive | 16 核/32 逻辑处理器，约 31.3 GiB 内存；HypervisorPresent=true、VirtualizationFirmwareEnabled=true；SLAT 查询为 false，存在 hypervisor 时不据此推定固件不支持或要求改 BIOS；C: 空闲约 71.2 GiB，D: 约 190.8 GiB |
+| 限额 | `.wslconfig` 是否存在、Docker settings-store 白名单字段 | `.wslconfig` 不存在；Docker 设置中有默认 WSL 集成开启。未查到显式 CPU/内存限制字段，不猜运行限额；Engine 启动后再核验实际资源 |
+| 代理/网络 | Windows Internet Settings 白名单布尔值；GitHub 只读查询 | 用户代理开启且已配置，PAC 未配置；未公开代理值。GitHub tag 查询成功但较慢；容器内代理、镜像拉取、DNS、模型服务均未测，不能把宿主成功等同容器联网 |
+
+Docker Windows 官方文档列出 WSL 版本等条件，并说明安装后需启动 Desktop；本轮未执行安装或系统功能命令。当前只需先尝试正常启动已安装 Desktop，没有证据要求提权/重启/重装。[Docker Windows 文档](https://docs.docker.com/desktop/setup/install/windows-install/)、[WSL 后端说明](https://docs.docker.com/desktop/features/wsl/)。
+
+### CURRENT 三项来源定位
+
+路径缩写：日常 home=`C:\Users\DW\.codex`；托管 home=`C:\Users\DW\AppData\Roaming\orca\codex-runtime-home\home`。这里只记录来源与元数据，未将提示词正文、记忆、认证或数据库提交 Git。
+
+| 项目 | 已定位的来源及本轮证据 | 触发/导出边界 |
+|---|---|---|
+| 当前生效的一条内置提示词 | 当前会话具有用户提供的通用执行协议；两处 home 的 AGENTS.md 均为 1776 字节且内容一致。托管 models_cache.json 存在 gpt-6-astra 的 model_messages 元数据；它与 AGENTS.md 是不同来源，不能互相冒充。两份 config.toml 未发现根级指令文件覆盖键；Orca 当前 profile 的已检查 settings 范围未发现一条对应自定义指令正文 | 能确认用户规则文件与模型指令缓存存在；尚不能证明用户所指“一条内置提示词”的精确身份及实际最终选择/注入方式。未导出模型模板或将 AGENTS.md 擅定为完整基线；需确认对应来源，再按支持的方式保存 |
+| 长期记忆 | 当前会话提供的记忆指引指向托管 home 的 memories；实测其下有 memory_summary.md、MEMORY.md、raw_memories.md、rollout_summaries/、skills/、extensions/，home 根还有 memories_1.sqlite 及 WAL/SHM。日常 home 也有 memories，但 MEMORY.md/raw_memories.md 与托管内容不相同 | 当前可见记忆来源是托管 home，不能任选日常副本。仅查目录/比较文件是否相同，不导出完整历史或读数据库内容。哪些通用经验应纳入起点、如何排除本轮答案，以及原生数据库/文件的受支持导出与复位方式尚未确认 |
+| 提示词钩子 / 记忆触发 | 两份 config.toml 均有 `[features] memories=true`、`[memories] generate_memories=true`、`use_memories=true`；本会话收到按任务相关性读取长期记忆的提示性指引，并实际可读取托管 registry | 配置与提示性指引为可见证据，不代表硬拦截或已验证所有未来 Worker 的原生注入/写回。确切生成器、版本耦合和容器复现路径留待核验；正常更新权限按每次试验实际生效规则记录，不偷偷禁用 CURRENT 原有能力 |
+
+另外，日常 hooks.json 的 hooks 对象无事件，托管 hooks.json 有 8 类 `type=command` 事件。命令只做结构检查：均匹配 Orca hook 调用且未包含 memory 字样；Orca profile 中 agentStatusHooksEnabled=true。该证据只说明存在 Orca 命令 hook，**不证明它是长期记忆提示词钩子**，也不证明命令无其他副作用；本轮未执行这些 hook。托管 plugins→日常 plugins 的 Junction 仍在，容器不得继承该宿主链接。
+
+安装包内 `resources/app.asar.unpacked/out/main/chunks/managed-agent-hook-controls-RcsNtBpP.js:334` 将 AGENTS.md 列为全局指令资源；345 行从系统 homedir 拼出 `.codex`；369 行附近的 `syncCodexGlobalInstructionsIntoManagedHome` 使用 preferCopy 将全局指令同步到 managed home。只读代码与两份相同文件相符，但不证明它就是用户所指模型内置提示词。该代码未把 memories 列入这组资源，因此也不能推断两处记忆自动同步。托管模型缓存的 client_version=0.153.4、model_messages 存在模板与其他指令字段；未输出正文或从缓存拼造实际完整提示词。
+
+### 固定版本资料与最小容器边界
+
+- 安装 app.asar 的 package.json 实读为 orca 1.4.188。只读 `git ls-remote https://github.com/stablyai/orca.git 'refs/tags/v1.4.188' 'refs/tags/v1.4.188^{}'` 成功：tag object=`8e9d661e4f515b17a90e6916ab193367f09f42e9`，peeled commit=`f32ce859047a85a3ea4f507f633604dfbf596a0e`。这只是版本资料定位，不等于确认安装包对应构建或选定 U。
+- 已读 [v1.4.188 package.json](https://raw.githubusercontent.com/stablyai/orca/v1.4.188/package.json) 与 [该版本 headless Linux 文档](https://raw.githubusercontent.com/stablyai/orca/v1.4.188/docs/reference/headless-linux-server.md)。文档提供 AppImage 解包、Xvfb 和非 root 运行线索；实际容器正常权限、sandbox、Worker、停止仍未测。文档含 latest/root/对外服务示例，不直接照搬。
+- 读取 [该版本配置镜像代码](https://raw.githubusercontent.com/stablyai/orca/v1.4.188/src/main/codex/codex-config-mirror.ts) 可见 system/runtime home 配置传播路径；源码阅读不等于本机或容器隔离通过。一次 codex-home-paths.ts 在线读取返回 Cache miss，未当作已核验。
+- G00 放行后才准备最小 Dockerfile、Compose、启动说明；一套 Orca 与其 Worker 在一个实验容器内，复用 Worktree。M 固定 1.4.188，U 另选定完整 SHA；不得用 latest 把 CURRENT 换成另一版。保持 Windows 日常 Orca 原状，不建设每 Agent 一容器调度器。
+- 本轮尚未保存可运行基线。后续只按已确认清单保存提示词、通用经验和提示词钩子；每轮独立副本，允许本轮正常记忆更新，下一轮恢复经确认起点。秘密/认证不进 Git、镜像层或公开记录，不挂/复制整个宿主 HOME、日常 Orca、日常仓库、DW/.codex 或 Docker socket。
+
+### 需要人工完成的动作与未知项
+
+1. 用当前 Windows 用户正常打开 `C:\Program Files\Docker\Docker\Docker Desktop.exe`，等待 Engine 就绪。保持 Linux/WSL2 目标，不要求换 Windows 账户。本轮仅获准只读检查，因此 Agent 没有启动 Desktop。随后复查 docker version 的 Server、docker info 的 OSType/资源与 Compose；若出现权限、组件或重启提示，记录准确提示再决定，不能自行提权或升级。
+2. 确认所指“一条内置提示词”的入口/名称，或确认它是否就是当前通用执行协议；不能将模型指令缓存和 AGENTS.md 默认为同一项。无须提供秘密、token 或 Kit.zip。当前三项定义已接受，这项确认只用于精确保存起点。
+3. 提示词和记忆起点的导出/筛选尚未验证；G00 只读范围内不复制活跃数据库或整目录。需先明确正常导出方法及通用经验范围，G01 保存经确认的副本，G03 验证加载和跨轮复位。没有这些证据不宣称 CURRENT 可复现。
+4. 没有证据要求安装 Docker/Compose/WSL、启用额外系统功能、管理员操作或 Windows 重启。容器模式实际值、限额、代理/拉取、Linux 同版本包可用性、Codex 认证/原生记忆机制仍待 Engine 就绪及对应关卡检查。VM 保留为有具体运行/复现失败证据后的备选。
+
+### 当前交接
+
+当前关卡及状态：G00，阻塞；Docker-first/CURRENT 定义已由用户决定，G03 未开始、未通过。
+
+实际完成：只读 Docker/WSL/资源/代理检查、三项配置来源定位、1.4.188 资料定位；更新现有手册 G00–G04 与环境/基线定义，保留首次证据。
+
+提交与实际验收结果：文档一致性检查与 `git diff --check` 通过；本轮提交用 `git log -1 -- docs/G00-HANDOFF.md` 定位，推送后核对同名远端分支 SHA。Docker CLI/Compose/WSL 查询成功，Engine 连接失败；构建、容器启动、Worker、停止、隔离与复位均未测。
+
+仍在运行的 Worker／未完成事项：本轮未派发 Worker，不停止日常进程；Engine 不可达，精确提示词身份和记忆导出机制待核验。
+
+需要用户作出的决定：先正常启动已安装 Docker Desktop；确认提示词对应入口；后续按真实错误决定是否需要额外环境操作，不自动放行 G00/G03。
+
+文档验证：用 Node 只读比较 HEAD 与当前文本，确认 G05–G10 功能和两组实验段落完全未变、所有关卡子项 ID 保留、G01–G10 仍待开始、G00 仍阻塞；首次环境表/备份提案/命令证据保留且标注失效范围。三个修改文件的本地 Markdown 链接、代码围栏、有限凭据模式检查通过；未新增源文件、Dockerfile、Compose 或另一份规划。以上检查不是功能测试或完整安全审计。
