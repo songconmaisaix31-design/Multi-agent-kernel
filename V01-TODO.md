@@ -62,11 +62,11 @@ G08 回归门 → G09 CURRENT/KERNEL 两组对照 → G10 实验版评审/退出
 | 关卡 | 核心产物 | 状态 | 负责人 | 提交/证据 | 放行人 |
 |---|---|---|---|---|---|
 | G00 | 现状与保护清单、隔离决定 | 待验收 | 当前协调 Agent（单轨） | [G00 接手记录](docs/G00-HANDOFF.md) | 总控（待证据核验） |
-| G01 | Fork、当前 M/K 与上游 U | 待开始 | 待指定 | — | 总控 |
+| G01 | Fork、当前 M/K 与上游 U | 执行中 | 总控 / B | Fork 未创建，固定源码核查中 | 总控 |
 | G02 | 未修改源码与监督 Worker 冒烟 | 待开始 | 待指定 | — | 总控 |
-| G03 | 实例、主目录、会话、CLI 隔离证明 | 待开始 | 待指定 | — | 总控 |
+| G03 | 实例、主目录、会话、CLI 隔离证明 | 阻塞 | 总控（唯一环境执行者） | Docker sandbox 133，真实 Worker 未测 | 总控 |
 | G04 | CURRENT 冒烟与两组实验规格 | 待开始 | 待指定 | — | 总控 |
-| G05 | 受管模式、契约与计划检查 | 待开始 | 待指定 | — | 总控 |
+| G05 | 受管模式、契约与计划检查 | 执行中 | A / B | 计划纯规则与固定源码接入核查 | 总控 |
 | G06 | 受约束派发、交接、停止 | 待开始 | 待指定 | — | 总控 |
 | G07 | 实际候选验收与整合 | 待开始 | 待指定 | — | 总控 |
 | G08 | 正常/故障回归与完整闭环 | 待开始 | 待指定 | — | 总控 |
@@ -99,10 +99,14 @@ G08 回归门 → G09 CURRENT/KERNEL 两组对照 → G10 实验版评审/退出
 - 接管：本地/远端均为 `67f223829f8cfc1fab384f858af2f01dd923ef6c`，原工作区干净。旧终端 `term_03037b89-39ea-40e1-9938-69583fcc9b8c` 已明确回复无子进程/Worker/未提交工作，写权已交出；四个实验容器均 exited，保留现场。
 - 源码事实：现有私有仓库不是 Fork，旧执行者确认尚未创建或引入源码；当前账户可见列表无 Orca Fork。新增公开 Fork 决策待用户答复，先在已授权项目保存可迁入上游的最小 TypeScript 纯规则实现，不建立运行时或另一技术栈。
 - 总控：只维护现有三份文档、任务、验收和决策；环境只读核查由总控唯一负责。无源码 runtime 启动、无 sandbox 降级、无新模型实验。
-- A 规则轨：独立 child Worktree/Branch `kernel-v01-rules`，唯一 write_paths 为 `src/kernel/plan.ts`、`tests/kernel/plan.test.ts`；实现合法/非法计划检查及真实 Node 24 测试，commit + 普通 push。
-- B 接入轨：独立 child Worktree/Branch `kernel-v01-integration`，当前唯一 write_paths 为 `docs/ORCA-INTEGRATION.md`；核对固定 `v1.4.188` 上游入口、schema、测试脚本副作用，提出最小接入点，核查前不猜业务实现。之后同一 Worker 负责接入与返修。
+- A 规则轨：独立 child Worktree `C:/Users/DW/orca/workspaces/Multi-agent-kernel/kernel-v01-rules` / Branch `songconmaisaix31-design/kernel-v01-rules`，唯一 write_paths 为 `src/kernel/plan.ts`、`tests/kernel/plan.test.ts`；实现合法/非法计划检查及真实 Node 24 测试，commit + 普通 push。
+- B 接入轨：独立 child Worktree `C:/Users/DW/orca/workspaces/Multi-agent-kernel/kernel-v01-integration` / Branch `songconmaisaix31-design/kernel-v01-integration`，当前唯一 write_paths 为 `docs/ORCA-INTEGRATION.md`；核对固定 `v1.4.188` 上游入口、schema、测试脚本副作用，提出最小接入点，核查前不猜业务实现。之后同一 Worker 负责接入与返修。
 - 公共字段版本 1，唯一 owner 为 A：沿用 G05 草图 `schemaVersion/objective/nonGoals/baseCommit/tasks`，任务 `key/owner/writePaths/dependsOn/acceptance/escalateWhen`；引用真实 Orca Task 时才使用原生 ID。只支持相对精确文件和带 `/` 后缀的目录前缀；拒绝 glob、穿越、绝对路径及大小写歧义；允许单任务、依赖串行复用写路径，拒绝并行重叠及环。不创建额外状态/证明系统。
 - 验收：缺字段、循环、未知依赖、父子路径、相似前缀不误报、共享文件、串行、单任务；纯规则通过仅记 G05 部分证据，不能代表真实派发或 v0.1 完成。
+- 原生开发派发：Run `run_17a07a644aaa`；A Task `task_a75cf4e9859c` / Dispatch `ctx_a11e1722d27e`，B Task `task_198024d3db1f` / Dispatch `ctx_0ec41115606f`，均 ready/input_accepted。组合 new-child 两次 selector_not_found 后改用已文档化的显式 parent worktree 创建；绑定当前总控本人终端、精确 worker worktree 后成功。未伪造其他身份或跳过平台检查。两轨已实际启动；这只是稳定日常开发工具派发，不是实验 Kernel 验收。
+- 环境复核：原 AppImage SHA256 再次与官方值一致。现有 Ubuntu WSL Running、默认 uid=0，宿主 HOME 可见；root 下 userns 命令成功不能证明非 root 实验隔离。常见 VM 命令/安装路径及 vmms 未找到；不据此扩大权限或直接在共享 WSL 运行实验。C: 空闲约 69.4 GiB，D: 190.1 GiB。
+- A 已报告完成并经总控独立复跑：`5d2f78d9077a8a14abe20a1136e3c83a4955773c`，仅两条 write_paths，`node --test tests/kernel/plan.test.ts` 121/121，通过且无跳过；远端 SHA 一致。尚未运行 TypeScript 独立类型检查或 Orca 全仓构建。`worker-release` 返回 retained/external_terminal/processAction=none，原生机制未拥有该预先创建终端；已停止工作且保留，不强制关闭。
+- 专用 WSL 实查（非正式运行环境）：从原诊断镜像创建未启动容器 `orca-kernel-wsl-export-14c174a` 并导出 2053503488 字节根文件系统，在首次启动前写入独立 wsl.conf：禁用 automount/fstab/Windows interop、默认 node；通过已有 WSL 导入 `OrcaKernelLab-v014188`，所有文件位于 `C:/Users/DW/AppData/Local/OrcaKernelLab/wsl/`。未安装系统组件/提权/重启/全局修改。uid=1000、宿主 HOME 不可见、userns 退出0，但 `/mnt/wsl` 仍包含 Docker Desktop 共享 sockets 与其他 bind mounts，隔离不通过；未启动 Orca/模型。已仅 terminate 该实验 distro，原 Ubuntu/Docker 不动。该实例不得用于模型实验，不能把 userns 成功记为 G03 通过。配置和导入方式参考 Microsoft WSL 官方文档，现场保留。
 - 下一批：A 代码经总控复核后交集成执行者整合。Fork 和安全运行环境就绪后接入现有 Orca 服务，再验真实 Worker/结果/停止。CURRENT/KERNEL 12 次尚未执行，认证与预算数值未核实，不新增费用。
 
 ### 0.4 每关统一放行规则
