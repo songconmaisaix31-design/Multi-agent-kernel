@@ -208,7 +208,7 @@ Codex / Orca CLI 通用执行协议
 
 Engine 资源是整个 Docker 后端的可用配置，不是已经分配给未来实验容器的预算。没有创建容器、读取其他容器内容、拉镜像或执行 Worker；不能据此宣布 Orca/Codex 在容器中可运行或已隔离。
 
-### 当前交接
+### 提示词确认轮交接（历史，最新依赖修订见下）
 
 当前关卡及状态：G00，阻塞。提示词身份已确认、Engine 可达性已解决；不重新要求 Windows 实验用户或独立 Kit。
 
@@ -219,3 +219,99 @@ Engine 资源是整个 Docker 后端的可用配置，不是已经分配给未�
 仍在运行的 Worker／未完成事项：本轮未派发 Worker。长期记忆通用经验的筛选/一致性导出、提示词记忆钩子的保存方式仍待核验，G00.03 保持未完成；G01/G03 的基线保存与实际复现未执行。
 
 需要用户作出的决定：提示词与 Docker 启动不再需要确认或人工操作。后续只在确需批准导出范围、环境写入或模型运行时按对应关卡处理；当前不自动放行 G00，不把 Docker 可达视为 G03 通过。
+
+## 局部依赖修订与无挂载冒烟（2026-09-06，当前有效）
+
+从 `144417c91bbe8b1141faa54684276d3fa6b23d50` 的原分支继续，初始工作区干净。原始协议正文保持上一节的单份原文，不重写长期轨数量、原 Worker 持续返修或集成仅胶水规则。最新用户决定将有限定位的未知项标为 **CURRENT 复现待确认，留给 G04**；它不再阻塞 Docker 前置检查、源码阅读或未计分环境冒烟。本轮没有新增规划、调度器或证明系统。
+
+### 原文保存与加载证据分开
+
+- 正文已保存：现有“已确认的 CURRENT 提示词正文”代码块，来源为用户提供的原文；只存一份，已与两处 AGENTS.md 核对。再次确认正文未变，不新增 Kit.zip 或另一个协议文件。
+- 已有加载线索：本机 AGENTS.md 与托管副本一致，前轮已读 Orca 的全局指令复制路径；当前会话可见用户规则与记忆读取指引。
+- 实际加载尚未验证：容器 Worker 最终组合提示词、长期记忆与提示词钩子的完整效果。显式加载协议的临时复现只能算技术冒烟，不能称为完整 CURRENT。
+
+### 有边界来源复核
+
+| 项目 | 本轮实际结果 | 后续边界 |
+|---|---|---|
+| Codex 版本 | 安装入口 `node C:\Users\DW\AppData\Roaming\npm\node_modules\@openai\codex\bin\codex.js --version`，15 秒上限，退出 0 / 832 ms：codex-cli 0.153.4；包元数据也是 0.153.4 | 仅查询版本，无模型请求 |
+| home | 系统 home=`C:\Users\DW`；本宿主终端 CODEX_HOME 未设置；托管 home=`C:\Users\DW\AppData\Roaming\orca\codex-runtime-home\home` 实际存在 | 不以宿主变量未设置推定所有 Worker home |
+| 规则 | 日常/托管 AGENTS.md 各 1776 字节；仓库无额外 AGENTS.md 文件，遵守用户本会话给定协议 | 原文保留，不改日常文件 |
+| memories | 已知托管目录含 memory_summary.md、MEMORY.md、raw_memories.md、rollout_summaries、skills、extensions；两处 home 都有 memories_1.sqlite | 只查已知位置的元数据，不读数据库、导出全部记忆或扫描整个磁盘；筛选/导出/跨轮复位交 G04 确认 |
+| 配置开关 | 两处 config.toml 均为 features.memories=true、memories.generate_memories=true、memories.use_memories=true | 表示配置事实，不冒充完整运行验证 |
+| hooks / 插件 | 日常 hooks 无事件；托管 hooks 有已记录 8 类事件；托管 plugins 仍为指向日常 plugins 的 Junction | 未执行 hook，不默认提示词钩子存在独立脚本，不修改插件引用；完整 CURRENT 加载待 G04 |
+
+### Docker 命令、边界与结果
+
+实际 CLI 路径由 Get-Command 得到：`C:\Program Files\Docker\Docker\resources\bin\docker.exe`。每次 CLI 调用使用独立子进程，**15,000 ms 超时上限**，捕获退出码与脱敏输出；未创建常驻脚本或调度器。确认 context 为本机 npipe、无 DOCKER_HOST/DOCKER_CONTEXT 覆盖后，Engine 命令都显式指定 `--context desktop-linux`。
+
+| 实际命令（docker 为上述绝对路径） | 退出码 / 耗时 | 脱敏结果 |
+|---|---|---|
+| `docker context show` | 0 / 64 ms | desktop-linux |
+| `docker context ls --format '{{json .}}'` | 0 / 63 ms | default、desktop-linux 均 npipe；仅后者 current，不切换 context |
+| `docker context inspect desktop-linux` | 0 / 65 ms | 本地 named pipe，不是未知远端 |
+| `docker --context desktop-linux version --format '{{json .}}'` | 0 / 99 ms | Client/Server 29.5.3，Server linux/amd64 |
+| `docker --context desktop-linux info --format '{{json .}}'` | 0 / 934 ms | linux/x86_64；32 CPU；16391360512 字节内存；WSL2 kernel；overlayfs；当时有 53 个运行中容器 |
+| `docker compose version` | 0 / 153 ms | v5.1.4 |
+| `docker --context desktop-linux image ls --format '{{json .}}'` | 0 / 387 ms | 81 行镜像记录；可复用本地 BusyBox 等小镜像；不打印其他项目镜像详情 |
+| `docker --context desktop-linux image inspect fd8d9aa63ba2` | 0 / 120 ms | 本地 BusyBox，linux/amd64；无声明卷。固定完整镜像 ID 见下，不解析 latest 下载 |
+| `docker --context desktop-linux info --format '{{json .}}'`（代理字段复核） | 0 / 277 ms | HTTP/HTTPS/NoProxy 已配置，只输出布尔值。首次 Node 投影字段大小写错误导致 false，已更正；不是实际代理变化 |
+
+没有权限失败或超时，Docker 检查层没有失败。镜像/包联网、容器 DNS、模型网络仍未测；配置了代理不等于这些链路已通。
+
+### 已执行的小容器冒烟
+
+复用本地 BusyBox 镜像，虽然缓存标签为 latest，实际运行固定本地 ID `sha256:fd8d9aa63ba2f0982b5304e1ee8d3b90a210bc1ffb5314d980eb6962f1a9715d`，使用 `--pull=never`，**没有额外下载**。这是 Docker 引擎冒烟，不是 Orca 版本基线。
+
+实际参数：
+
+```text
+docker --context desktop-linux create --pull=never
+  --name orca-kernel-g00-smoke-144417c --label orca-kernel.scope=g00-smoke
+  --network none --read-only --user 65534:65534 --cap-drop ALL
+  --security-opt no-new-privileges --pids-limit 16 --memory 32m --cpus 0.25
+  --entrypoint /bin/sh
+  sha256:fd8d9aa63ba2f0982b5304e1ee8d3b90a210bc1ffb5314d980eb6962f1a9715d
+  -c 'id && uname -s && test "$(id -u)" = 65534'
+```
+
+上面换行只用于展示实参，非 PowerShell 可直接粘贴脚本；实际通过参数数组调用 CLI，无字符串 shell 拼接。
+
+| 步骤 | 实际结果 |
+|---|---|
+| 查同名容器 | container ls -a，精确 name filter，退出 0 / 79 ms，无匹配；没有复用或覆盖他人容器 |
+| create | 退出 0 / 208 ms；CID=`649d27fc553fbd0767ee297a0fa539b31a55f1d955bdb02e5b1a3224b992c8c2` |
+| inspect 后才启动 | 退出 0 / 92 ms；Mounts=[]、Privileged=false、User=65534:65534、NetworkMode=none、ReadonlyRootfs=true、CapDrop=[ALL]、SecurityOpt=[no-new-privileges] |
+| start --attach（仅该 CID） | 退出 0 / 414 ms；输出 uid=65534(nobody)、gid=65534(nobody)、Linux |
+| inspect State | 退出 0 / 81 ms；status=exited、Running=false、ExitCode=0、OOMKilled=false |
+| rm（仅该 CID） | 退出 0 / 151 ms；删除本次已退出容器，无 force、prune、卷清理或影响其他容器的切换 |
+
+首个小容器成功不等于 Orca serve、Codex、Worker、sandbox 兼容性、完整 CURRENT、G00 或 G03 已验收。
+
+### 首个未执行层与下一条动作
+
+**首个受阻层为 Orca 实验产物准备，不是 Docker 引擎或记忆导出。** 当前仓库与此前授权的 `C:\Users\DW\Desktop\kernel` 内均未找到 Dockerfile/Compose（rg 无匹配返回 1）；本地镜像名有限筛选未发现 Orca/Kernel/Electron 镜像。因此固定 Orca serve **未执行**，没有可报告的 Orca 运行失败，也没有证据需要改用 VM。
+
+已通过只读 GitHub Release API 查询 v1.4.188（请求限时 15 秒，约 2619 ms 成功），确认 x86_64 发行包为：
+
+- URL：https://github.com/stablyai/orca/releases/download/v1.4.188/orca-linux.AppImage
+- 大小：205918977 字节，约 196.4 MiB。
+- 官方资产摘要：sha256:2e70cb5e199741e5602a7060825575319f5e03bc2faa4b89cd27328f3f55d4b4。
+
+这是官方产物完整性信息，不是自建 Hash/Manifest 系统。查询前一次 gh 路径缺少 bin 导致 ENOENT；已用 Get-Command 定位正确路径，并用上述只读 API 查询取得结果，不记成 Docker 失败。
+
+**下一条需要授权的动作：** 仅从上述固定 URL 下载该文件到 `C:\Users\DW\AppData\Local\OrcaKernelLab\downloads\v1.4.188\orca-linux.AppImage`，在原目录不存在时新建该专用目录，存在时先检查、不覆盖未知文件；核对官方摘要。此下载尚未执行，因用户本轮明确将额外下载列为需授权事项。下载不包含安装、模型请求、代理修改或挂载日常目录。
+
+后续需要在 G01 的获准范围准备最小 Dockerfile/Compose/启动说明，因为没有可直接复用的现有配置；不把未准备的文件写成“已运行”。基础镜像、系统依赖和运行命令需基于固定版本资料审查，任何新增下载另按范围列明；本轮只修改现有文档。未计分 serve 冒烟不需要长期记忆或生产仓库；模型请求继续受原预算约束。
+
+### 当前交接
+
+当前关卡及状态：G00，待验收；未自动通过 G00/G03，正式 G01–G10 未开始。CURRENT 复现待确认仅由 G04 承接。
+
+实际完成：保留原始提示词；有界定位真实 Codex/home/记忆/hooks/插件引用；执行 Docker 必需命令与无挂载小容器冒烟；修改现有手册局部依赖及当前记录。
+
+提交与实际验收结果：Docker 查询和小容器退出 0；源码阅读线索保留；固定 Orca serve 未执行。Node 文档比较、链接/围栏/有限凭据模式检查及 git diff --check 通过，原协议正文、G03、G05–G10 和实验分组保持不变；同一分支提交后核对远端 SHA，提交可由 git log -1 -- docs/G00-HANDOFF.md 定位。
+
+仍在运行的 Worker／未完成事项：本轮未派发 Worker，冒烟容器已删除。固定版本包和最小 Docker 配置尚未准备；记忆完整复现待 G04，不阻塞前置工作。
+
+需要用户作出的决定：验收 G00 记录，并授权上面准确列出的固定 Linux 发行包下载；不需要重新选环境、提供 Kit.zip 或先导出全部记忆。
