@@ -12,7 +12,7 @@
 
 当前环境决定为 Docker-first：Windows 日常 Orca 保持原状，实验 Orca/Codex、非 root HOME、记忆副本和目标仓库在容器内；VM 只作备选，不要求 Windows 换用户。CURRENT 正式定义为一条当前生效的内置提示词、长期记忆及其提示词钩子，加 Orca 1.4.188 基础设施与惯常操作；不寻找独立 Kit。
 
-固定 v1.4.188 Linux 包已下载并通过官方 SHA256 校验。当前推进未修改 Orca 的容器启动、Worker、结果和停止技术冒烟；具体状态、证据及阻塞只更新 [V01-TODO.md 的当前任务](V01-TODO.md)。G00/G03 未自动通过，G04 通过后才开始功能开发。
+固定 v1.4.188 Linux 包已下载并通过官方 SHA256 校验。当前推进未修改 Orca 的容器启动、Worker、结果和停止技术冒烟；具体状态、证据及阻塞只更新 [V01-TODO.md 的当前任务](V01-TODO.md)。G00/G03 未自动通过；按真实依赖推进独立源码开发和纯规则测试，G04 完整 CURRENT 复现约束正式比较。
 
 [固定发行包续传脚本](scripts/resume-orca-download.ps1) 的完成结果保留在实验下载目录 `resume-download.log`。实验容器使用 [Compose](compose.yaml) 和 [Dockerfile](docker/Dockerfile)，只读取指定发行包构建上下文，不挂载日常 HOME、仓库或 Docker socket。启动说明随实际验证补入现有看板。
 
