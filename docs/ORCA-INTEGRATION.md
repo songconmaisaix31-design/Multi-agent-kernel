@@ -1,3 +1,4 @@
+> 开发位置已迁移：本文件是首批历史记录，不再维护活跃计划。唯一看板位于公开 Fork [orca-kernel](https://github.com/songconmaisaix31-design/orca-kernel/blob/kernel/v01-managed-dispatch/V01-TODO.md)。2026-09-06 本次实测旧库为 PUBLIC、非 Fork；未执行可见性修改。以下 PRIVATE/未获 Fork 授权等描述仅记录当时状态，不代表当前权限或进度。
 # Orca v1.4.188 最小接入研究
 
 2026-09-06 · B 接入轨 · 规划基线 `14c174adf1b3dd373a83b437467d43f60f2a6073`。本批只写本文，未引入运行时；现有私有规划库不是 Orca Fork，公开 Fork 决策及安全运行环境仍待总控处理。A 唯一维护计划类型，本轨不另定义字段或调度器。

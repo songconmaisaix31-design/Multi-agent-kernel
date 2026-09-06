@@ -1,3 +1,4 @@
+> 开发位置已迁移：本文件是首批历史记录，不再维护活跃计划。唯一看板位于公开 Fork [orca-kernel](https://github.com/songconmaisaix31-design/orca-kernel/blob/kernel/v01-managed-dispatch/V01-TODO.md)。2026-09-06 本次实测旧库为 PUBLIC、非 Fork；未执行可见性修改。以下 PRIVATE/未获 Fork 授权等描述仅记录当时状态，不代表当前权限或进度。
 # G00 接手与环境盘点
 
 日期：2026-09-06（Asia/Shanghai）。运行状态是本轮查询时的快照。

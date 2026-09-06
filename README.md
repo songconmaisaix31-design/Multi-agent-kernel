@@ -1,19 +1,12 @@
-# Orca-Kernel
+# Orca-Kernel 前期成果归档
 
-基于 Orca 的有限范围二开：复用会话、Worktree、任务、消息与恢复能力，补充任务契约、执行准入和成果验收。当前只推进 v0.1。
+正式开发已迁至获准复用的 [公开 Orca Fork：orca-kernel](https://github.com/songconmaisaix31-design/orca-kernel/tree/kernel/v01-managed-dispatch)。后续进度只维护 Fork 内的 [唯一看板](https://github.com/songconmaisaix31-design/orca-kernel/blob/kernel/v01-managed-dispatch/V01-TODO.md)，不在本库建立第二份活跃计划。
 
-本仓库保存项目执行依据、接手记录和已整合的 v0.1 最小计划规则；尚未引入 Orca 完整源码，也未接入受管运行功能。GitHub 上它是私有独立仓库，不是 `stablyai/orca` 的 Fork；现有 LICENSE 不替代将来引入上游时应保留的许可与来源。
+本库保留首批计划规则、Node 测试、研究与环境记录。接手时真实 HEAD 为 `08d1ff6b8f2a0df4cce538213d7943508a18e5d2`；其历史和来源提交完整保留。当前 GitHub 实测本库为公开独立仓库，并非 stablyai/orca Fork；本次没有修改可见性、LICENSE 或公共历史。
 
-- [执行手册与唯一看板](V01-TODO.md)：每次先读当前关卡、入口条件与放行记录。
-- [版本功能路线图](docs/ROADMAP-2026-09-06.md)：用户提供的规划原文，后续版本不代表本轮范围。
-- [G00 接手与环境盘点](docs/G00-HANDOFF.md)：本轮证据、保护范围、备份方案和待解决事项。
+- [历史手册与验收记录（固定首批 SHA）](https://github.com/songconmaisaix31-design/Multi-agent-kernel/blob/08d1ff6b8f2a0df4cce538213d7943508a18e5d2/V01-TODO.md)
+- [原始路线图](docs/ROADMAP-2026-09-06.md)
+- [历史环境与 CURRENT 记录](docs/G00-HANDOFF.md)
+- [首批接入研究](docs/ORCA-INTEGRATION.md)
 
-两份规划冲突时，v0.1 执行以两组对照版手册为准：CURRENT 与 KERNEL，共 12 次主实验；CODEX 默认不执行，仅为可选独立参照；上游 U 冒烟不计入比较组。路线图第十四节的多组比较仅保留为历史规划，不增加本轮负担。
-
-当前环境决定为 Docker-first：Windows 日常 Orca 保持原状，实验 Orca/Codex、非 root HOME、记忆副本和目标仓库在容器内；VM 只作备选，不要求 Windows 换用户。CURRENT 正式定义为一条当前生效的内置提示词、长期记忆及其提示词钩子，加 Orca 1.4.188 基础设施与惯常操作；不寻找独立 Kit。
-
-固定 v1.4.188 Linux 包已下载并通过官方 SHA256 校验。计划纯规则及测试已合入；真实运行环境与受管接入仍待完成；具体状态、证据及阻塞只更新 [V01-TODO.md 的当前任务](V01-TODO.md)。G00/G03 未自动通过；按真实依赖推进独立源码开发和纯规则测试，G04 完整 CURRENT 复现约束正式比较。
-
-[固定发行包续传脚本](scripts/resume-orca-download.ps1) 的完成结果保留在实验下载目录 `resume-download.log`。实验容器使用 [Compose](compose.yaml) 和 [Dockerfile](docker/Dockerfile)，只读取指定发行包构建上下文，不挂载日常 HOME、仓库或 Docker socket。启动说明随实际验证补入现有看板。
-
-当前没有产品安装或 Orca 全仓构建入口。当前 checkout 的真实验证入口为 `node --test tests/kernel/plan.test.ts`（Node 24）；它只验证计划纯规则，不代表真实派发、停止、整合或 v0.1 完成。
+原库 `node --test tests/kernel/plan.test.ts` 的 121 条纯规则测试已通过；这不等于 Fork Vitest、TypeScript 检查、受管 Worker 或真实 v0.1 已通过。新的实际结果请看唯一看板。
