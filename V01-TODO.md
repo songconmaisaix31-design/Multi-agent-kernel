@@ -81,12 +81,16 @@ G08 回归门 → G09 CURRENT/KERNEL 两组对照 → G10 实验版评审/退出
 
 **同日局部依赖修订：** 上段“记忆未导出使 G00 阻塞”不再生效。用户允许有限定位并把未知项留给 G04。Docker 实际命令全部有界执行成功，本地镜像的非 root、无网络/无挂载小容器已退出 0 并仅删除自身；G00 提交待验收，仍为 0/11 关通过。用户随后授权固定 v1.4.188 Linux 发行包的隔离下载、脚本续传，以及现在的未修改 Orca 启动/Worker/结果/停止技术冒烟；不再重复申请这些常规动作。实验安装仅在容器内，不修改日常 Orca，不把发行包技术冒烟代替未修改 U 的源码构建验收。
 
-**当前任务（唯一更新处）：** 单执行者推进固定 M=1.4.188 的未计分真实技术冒烟；G00 仍待验收，未自动通过 G00–G03，尚未开始 Kernel 功能开发。
+**当前任务（唯一更新处，2026-09-06 21:27 CST 核验）：** 固定 M=1.4.188 的未计分真实技术冒烟 **阻塞：默认 Docker 权限下 Electron sandbox 创建命名空间失败**。G00 仍待验收，未自动通过 G00–G03，未开发 Kernel 功能。环境仅一名执行者。
 
-- 实际新增证据：下载脚本于 20:00:51 完成；205918977 字节与官方 SHA256 再次实测相符。Docker 本机 desktop-linux 引擎 29.5.3 可达。固定 tag 的 package.json 实为 Node 24、pnpm 10.24.0；采用已验证对应提交 `f32ce859047a85a3ea4f507f633604dfbf596a0e` 作为 U 的候选，不用 main 替换 M。
-- 当前操作：[最小 Dockerfile](docker/Dockerfile) 与 [Compose](compose.yaml) 已准备，`docker compose config --quiet` 退出 0；正在构建非 root 发行包环境。基础 Node 24.16.0 / Debian bookworm amd64 镜像固定摘要，只有独立 HOME 命名卷，无宿主挂载、宿主发布端口或 Docker socket。
-- 下一动作：镜像构建完成后，核对默认权限下实际启动、容器 CLI 与 runtime 身份；再准备独立 Codex 认证、只读 Worker 结果及停止测试。
-- 真实阻塞与用户决定：GitHub 源码树 API 限流，已改为固定 raw 资料及本地同版本安装包只读定位，不影响当前构建。真实 Worker 的独立认证及两条冒烟任务额度已单独向用户确认，未获答复前不调用模型。CURRENT 起点保持冻结。
+- 下载与基线：续传脚本于 20:00:51 完成；发行包 205918977 字节，实际 SHA256 为 `2e70cb5e199741e5602a7060825575319f5e03bc2faa4b89cd27328f3f55d4b4`，与官方值相符。Docker 本机 `desktop-linux` 引擎 29.5.3 可达。固定 tag 的 package.json 要求 Node 24、pnpm 10.24.0；U 候选仍为已有证据的 `f32ce859047a85a3ea4f507f633604dfbf596a0e`，本轮 GitHub API 限流及 `git ls-remote` 20 秒超时不覆盖先前证据。
+- 构建事实：[Dockerfile](docker/Dockerfile) 固定 Node 24.16.0 / Debian bookworm 摘要；第一次完整构建在 Debian HTTP 软件索引下载层失败，退出 100。容器内独立诊断确认 HTTPS 可取数据但很慢，且缓存基础镜像缺 CA 文件；已改为容器内 HTTPS、Node 自带公开 CA 引导和正常证书校验，不改宿主代理。该 Node 24 配方修改后 **未重新完整构建**。
+- 实际安装与诊断候选：复用已有 Debian 12 / Node 22.23.2 / Xvfb 缓存镜像，仅运行覆盖后的实验入口；安装 GTK、CA、dbus-x11 等 38 个依赖成功。原 AppImage 解包目录为 root/700，先后实际启动退出 126（目录无执行权限）、127（缺 `libgtk-3.so.0`）；修正公共程序目录为 755、上游 sandbox helper 为 root/4755 后 `ldd` 无缺失。最终诊断镜像为 `sha256:2777dddd343e68ccf7894b035ed0e108703c1ac6aec0211db5e884515e80d01a`。这是 **Node 22 的包运行诊断，不能替代 Node 24 配方、U 源码构建或完整 CURRENT 验收**；未修改 Orca 程序内容。
+- 启动与停止实证：`orca-kernel-third-start-b94286a` 的版本 1.4.188、CLI `status --json` 退出 0，runtime `ready/reachable=true`，runtimeId=`645858ac-f3e3-4494-be84-8230e63cfe49`。随后检查 `/proc/7/cmdline` 发现上游 `AppRun` 自动追加了 `--no-sandbox`：其脚本在 `unshare -Ur true` 失败时启用该回退。**此 ready 结果作废，不计合规启动通过。** 已立即执行 `docker stop --time 30 orca-kernel-third-start-b94286a`，命令及容器均退出 0，21:24:17 CST 停止；这不是 Worker 停止验收。
+- 保留 sandbox 的真实失败：同一诊断镜像直接执行未修改的 `/opt/orca/squashfs-root/orca-ide serve --port 6768 --no-pairing --json`。容器 `orca-kernel-sandbox-start-b94286a` 于 21:25:10–21:25:11 CST 启动后退出 **133**，日志为 `Failed to move to new namespace ... errno = Operation not permitted`，随后 `zygote_host_impl_linux.cc:207` FATAL。`docker inspect` 与 `docker logs --tail 35` 各在 15 秒界限内退出 0。实际 user=1000:1000、privileged=false、capAdd=null、securityOpt=null、无宿主挂载/端口/网络；仅挂独立 HOME 命名卷。镜像内非 root `unshare --user --map-root-user /usr/bin/id` 也退出 1/Operation not permitted。[Dockerfile](docker/Dockerfile) 改为直接二进制入口，避免 AppRun 静默关闭 sandbox；未通过放宽权限继续试错。
+- Worker/结果/停止：**未执行、未通过**。日志确有 `spawn codex ENOENT`；诊断镜像尚未安装 Codex，独立认证未完成，真实模型预算问题尚未获答复。本次没有 Worker 或模型请求，不能用进程 ready、CLI 查询或 Docker 停止冒充 Worker 闭环。
+- 收尾与保护：`docker ps -a --filter name=orca-kernel-` 确认本轮四个实验实例均已退出（126、127、0、133）；没有运行中的实验 Worker。保留已知实验容器、镜像与 `orca-kernel-diagnostic-home-b94286a` 卷作为诊断现场，未 prune、未删除未知卷、未操作日常容器或日常 Orca/.codex/插件。CURRENT 原始协议、记忆与钩子记录保持冻结，完整复现未知项仍留给 G04。
+- 下一动作及用户决定：现有默认 Docker 权限路线已出现明确失败，按既有边界暂停扩展容器工程，提议转为独立 Linux VM。只读检查显示 Windows 11 家庭中文版、物理内存约 31.3 GiB、HypervisorPresent=true；常见路径未发现 VirtualBox/VMware，未发现 Hyper-V PowerShell 模块或 vmms 服务。这不等于证明系统没有任何虚拟机能力。切换路线获批后先核实现有虚拟化组件，再列出准确的安装包、下载量及系统变更；未经对应授权不安装、不提权、不重启。真实 Worker 独立认证和两条冒烟任务额度仍需确认，可待可用环境成立后处理。
 
 ### 0.4 每关统一放行规则
 
