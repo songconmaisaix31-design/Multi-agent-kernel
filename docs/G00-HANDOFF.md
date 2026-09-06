@@ -111,7 +111,7 @@ Docker Windows 官方文档列出 WSL 版本等条件，并说明安装后需启
 
 ### CURRENT 三项来源定位
 
-路径缩写：日常 home=`C:\Users\DW\.codex`；托管 home=`C:\Users\DW\AppData\Roaming\orca\codex-runtime-home\home`。这里只记录来源与元数据，未将提示词正文、记忆、认证或数据库提交 Git。
+路径缩写：日常 home=`C:\Users\DW\.codex`；托管 home=`C:\Users\DW\AppData\Roaming\orca\codex-runtime-home\home`。下表是 Docker-first 初次补查时的记录，当时仅记录来源与元数据。后续用户已确认并允许保存通用执行协议，最新正文与解除事项见文末；记忆、认证和数据库仍未提交 Git。
 
 | 项目 | 已定位的来源及本轮证据 | 触发/导出边界 |
 |---|---|---|
@@ -131,14 +131,14 @@ Docker Windows 官方文档列出 WSL 版本等条件，并说明安装后需启
 - G00 放行后才准备最小 Dockerfile、Compose、启动说明；一套 Orca 与其 Worker 在一个实验容器内，复用 Worktree。M 固定 1.4.188，U 另选定完整 SHA；不得用 latest 把 CURRENT 换成另一版。保持 Windows 日常 Orca 原状，不建设每 Agent 一容器调度器。
 - 本轮尚未保存可运行基线。后续只按已确认清单保存提示词、通用经验和提示词钩子；每轮独立副本，允许本轮正常记忆更新，下一轮恢复经确认起点。秘密/认证不进 Git、镜像层或公开记录，不挂/复制整个宿主 HOME、日常 Orca、日常仓库、DW/.codex 或 Docker socket。
 
-### 需要人工完成的动作与未知项
+### Docker-first 初次补查的待办（历史，最新状态见文末）
 
 1. 用当前 Windows 用户正常打开 `C:\Program Files\Docker\Docker\Docker Desktop.exe`，等待 Engine 就绪。保持 Linux/WSL2 目标，不要求换 Windows 账户。本轮仅获准只读检查，因此 Agent 没有启动 Desktop。随后复查 docker version 的 Server、docker info 的 OSType/资源与 Compose；若出现权限、组件或重启提示，记录准确提示再决定，不能自行提权或升级。
 2. 确认所指“一条内置提示词”的入口/名称，或确认它是否就是当前通用执行协议；不能将模型指令缓存和 AGENTS.md 默认为同一项。无须提供秘密、token 或 Kit.zip。当前三项定义已接受，这项确认只用于精确保存起点。
 3. 提示词和记忆起点的导出/筛选尚未验证；G00 只读范围内不复制活跃数据库或整目录。需先明确正常导出方法及通用经验范围，G01 保存经确认的副本，G03 验证加载和跨轮复位。没有这些证据不宣称 CURRENT 可复现。
 4. 没有证据要求安装 Docker/Compose/WSL、启用额外系统功能、管理员操作或 Windows 重启。容器模式实际值、限额、代理/拉取、Linux 同版本包可用性、Codex 认证/原生记忆机制仍待 Engine 就绪及对应关卡检查。VM 保留为有具体运行/复现失败证据后的备选。
 
-### 当前交接
+### Docker-first 初次补查交接（历史）
 
 当前关卡及状态：G00，阻塞；Docker-first/CURRENT 定义已由用户决定，G03 未开始、未通过。
 
@@ -151,3 +151,71 @@ Docker Windows 官方文档列出 WSL 版本等条件，并说明安装后需启
 需要用户作出的决定：先正常启动已安装 Docker Desktop；确认提示词对应入口；后续按真实错误决定是否需要额外环境操作，不自动放行 G00/G03。
 
 文档验证：用 Node 只读比较 HEAD 与当前文本，确认 G05–G10 功能和两组实验段落完全未变、所有关卡子项 ID 保留、G01–G10 仍待开始、G00 仍阻塞；首次环境表/备份提案/命令证据保留且标注失效范围。三个修改文件的本地 Markdown 链接、代码围栏、有限凭据模式检查通过；未新增源文件、Dockerfile、Compose 或另一份规划。以上检查不是功能测试或完整安全审计。
+
+## 提示词确认与 Engine 复查（2026-09-06，最新）
+
+用户在本轮明确确认下方《Codex / Orca CLI 通用执行协议》为正在使用的提示词。消息中的第二份相同内容按重复粘贴处理；CURRENT 起点保存一份，不重复注入，也不更换成模型厂商指令缓存。此确认解除“提示词精确身份未知”，不要求用户再次确认。
+
+已将用户给出的单份文本与日常/托管 home 的 AGENTS.md 比较：仅统一 CRLF/LF 和忽略首尾空白，内容一致。两份日常文件未修改；下面只保存已公开给本会话的通用协议，不附带任何记忆、凭据、模型模板或运行数据。
+
+### 已确认的 CURRENT 提示词正文
+
+```text
+Codex / Orca CLI 通用执行协议
+
+先读取当前仓库和用户提供的 TASK、PRD、开发规划及相关文件，确认目标、范围、验收、现有技术栈和可复用内容。任务文件是业务事实源，不自行扩大范围。
+
+小任务由单 Agent 直接完成。只有任务能够按互斥文件路径并行时，才使用 Orca CLI：
+
+- 主 Agent 先生成一页计划，按文件冲突面拆成 2–5 条长期开发轨。
+- 每轨固定：1 Agent + 1 Worktree + 1 Branch + 明确 write_paths。
+- Worker 可读取全仓，但只能修改自己的 write_paths；跨轨只提交 Handoff。
+- 开发、测试、文档和返修由同一个 Worker 持续完成，完成即 commit + push。
+- 主 Agent 只维护计划、状态、决策和验收，不写业务代码。
+- 所有轨道完成后，派发 1 个集成 Agent 合并；集成 Agent只补少量路由、导入、配置和类型胶水，领域问题退回原 Worker。
+
+始终遵守：
+
+1. 保持现有技术栈和目录，优先复用，不为并行重构项目。
+2. 使用完成任务所需的最少 Agent；文件冲突频繁时合并为一轨。
+3. 不建设自研调度器、Attempt、Manifest、Hash 或完成证明系统。
+4. 不 force push，不覆盖公共历史，不删除无法解释的文件或队友贡献。
+5. AI 已生成、Mock 可展示或代码未测试，都不等于功能完成。
+6. 核心路径、适用测试和构建未通过，不得宣称完成。
+7. 可自行判断的歧义记录为假设，不反复询问；遇到真实阻塞再报告。
+8. 每个阶段保留清晰 Commit，最终分支必须 push。
+
+最终只汇报：
+
+- 完成内容；
+- 分支与 Commit SHA；
+- 验证命令和结果；
+- 真实剩余限制；
+- 未执行或需要人工完成的操作。
+```
+
+### 本轮只读复查结果
+
+| 命令 / 检查 | 实测结果 |
+|---|---|
+| docker context show / context inspect | desktop-linux；本地 npipe；无 DOCKER_HOST 覆盖 |
+| docker version（筛选 Client/Server/OS） | 退出 0；Client=29.5.3，Server=29.5.3，OS=linux；历史管道不可达已解除 |
+| docker info（筛选系统与资源） | 退出 0；x86_64、32 CPU、MemTotal=16391360512 字节（约 15.3 GiB）、kernel=6.6.114.1-microsoft-standard-WSL2、driver=overlayfs |
+| docker info（代理字段仅输出是否配置） | HTTP/HTTPS/NoProxy 均已配置；不输出代理地址/凭据。容器 DNS、拉取和模型联网仍未测 |
+| docker compose version | 退出 0；v5.1.4 |
+| wsl --list --verbose（UTF-16 解码） | 退出 0；Ubuntu、docker-desktop 为 Running/WSL2；kali-linux 为 Stopped/WSL2。Agent 本轮没有启动发行版或 Desktop |
+| 提示词文本比较 | 用户单份文本与两处 AGENTS.md 在上述换行/首尾空白规范化后相同；交接只保存一份 |
+
+Engine 资源是整个 Docker 后端的可用配置，不是已经分配给未来实验容器的预算。没有创建容器、读取其他容器内容、拉镜像或执行 Worker；不能据此宣布 Orca/Codex 在容器中可运行或已隔离。
+
+### 当前交接
+
+当前关卡及状态：G00，阻塞。提示词身份已确认、Engine 可达性已解决；不重新要求 Windows 实验用户或独立 Kit。
+
+实际完成：保存一份已确认提示词；只读核对 Engine、资源、代理配置和 WSL 状态；更新现有手册/README/交接，保留之前错误与来源调查。
+
+提交与实际验收结果：提示词一致性和文档检查见本轮工具回执；文档提交由 git log -1 -- docs/G00-HANDOFF.md 定位。Engine/Compose/WSL 查询成功；实验构建、容器启动、Worker、停止、隔离和复位仍未测。
+
+仍在运行的 Worker／未完成事项：本轮未派发 Worker。长期记忆通用经验的筛选/一致性导出、提示词记忆钩子的保存方式仍待核验，G00.03 保持未完成；G01/G03 的基线保存与实际复现未执行。
+
+需要用户作出的决定：提示词与 Docker 启动不再需要确认或人工操作。后续只在确需批准导出范围、环境写入或模型运行时按对应关卡处理；当前不自动放行 G00，不把 Docker 可达视为 G03 通过。
