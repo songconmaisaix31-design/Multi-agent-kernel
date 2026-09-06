@@ -300,11 +300,11 @@ docker --context desktop-linux create --pull=never
 
 这是官方产物完整性信息，不是自建 Hash/Manifest 系统。查询前一次 gh 路径缺少 bin 导致 ENOENT；已用 Get-Command 定位正确路径，并用上述只读 API 查询取得结果，不记成 Docker 失败。
 
-**下一条需要授权的动作：** 仅从上述固定 URL 下载该文件到 `C:\Users\DW\AppData\Local\OrcaKernelLab\downloads\v1.4.188\orca-linux.AppImage`，在原目录不存在时新建该专用目录，存在时先检查、不覆盖未知文件；核对官方摘要。此下载尚未执行，因用户本轮明确将额外下载列为需授权事项。下载不包含安装、模型请求、代理修改或挂载日常目录。
+**当时提出的授权请求（现已获准，实际结果见下方补充）：** 仅从上述固定 URL 下载该文件到 `C:\Users\DW\AppData\Local\OrcaKernelLab\downloads\v1.4.188\orca-linux.AppImage`，在原目录不存在时新建该专用目录，存在时先检查、不覆盖未知文件；核对官方摘要。当时下载尚未执行，因用户将额外下载列为需授权事项。下载不包含安装、模型请求、代理修改或挂载日常目录。
 
 后续需要在 G01 的获准范围准备最小 Dockerfile/Compose/启动说明，因为没有可直接复用的现有配置；不把未准备的文件写成“已运行”。基础镜像、系统依赖和运行命令需基于固定版本资料审查，任何新增下载另按范围列明；本轮只修改现有文档。未计分 serve 冒烟不需要长期记忆或生产仓库；模型请求继续受原预算约束。
 
-### 当前交接
+### 下载授权前的交接（历史）
 
 当前关卡及状态：G00，待验收；未自动通过 G00/G03，正式 G01–G10 未开始。CURRENT 复现待确认仅由 G04 承接。
 
@@ -314,4 +314,54 @@ docker --context desktop-linux create --pull=never
 
 仍在运行的 Worker／未完成事项：本轮未派发 Worker，冒烟容器已删除。固定版本包和最小 Docker 配置尚未准备；记忆完整复现待 G04，不阻塞前置工作。
 
-需要用户作出的决定：验收 G00 记录，并授权上面准确列出的固定 Linux 发行包下载；不需要重新选环境、提供 Kit.zip 或先导出全部记忆。
+当时需要用户作出的决定：验收 G00 记录，并授权上面准确列出的固定 Linux 发行包下载；不需要重新选环境、提供 Kit.zip 或先导出全部记忆。下载随后已获授权，不重复申请。
+
+## 隔离下载授权与实际传输（2026-09-06，当前有效）
+
+用户回复：“允许，但是要隔离安装，不能影响本机日常使用的orca”。承接上面的准确下载请求，本轮执行固定 v1.4.188 Linux x86_64 发行包下载与完整性校验前置步骤；不重复申请此项授权。后续实验安装只在容器内进行，不在宿主运行此 AppImage，不替换 Windows 日常 Orca。
+
+### 目录与保护检查
+
+- 下载前 `OrcaKernelLab`、`downloads`、`v1.4.188` 均不存在；新建后逐层确认均为普通目录，没有 Junction、符号链接或重解析属性。解析后的绝对目的路径位于已授权根目录内。
+- 文件只写入 `C:\Users\DW\AppData\Local\OrcaKernelLab\downloads\v1.4.188\orca-linux.AppImage.part`，完整目标文件不存在；拒绝覆盖未知文件。二进制与分片均在仓库外，不提交 Git。
+- 下载前后日常 `C:\Users\DW\AppData\Local\Programs\orca\Orca.exe` 的 ProductVersion 均为 `1.4.188.0`，LastWriteTimeUtc 均为 `2026-08-22T06:09:44Z`。本轮未向日常 Orca、`.codex`、插件或代理配置写入；此元数据比较不冒充完整隔离验收。
+- 未执行安装、AppImage、容器创建、模型请求或系统变更；没有宿主 HOME/Docker socket 挂载、提权或关闭 sandbox/TLS 校验。
+
+### 实际命令与结果
+
+实际 curl 路径为 `C:\Windows\system32\curl.exe`。下面的 `$assetUrl` 为上方固定官方 URL，`$partial` 为上述实验 `.part` 路径；命令的输出格式仅含 HTTP 状态和字节数，不输出重定向签名 URL。
+
+```powershell
+$assetUrl = 'https://github.com/stablyai/orca/releases/download/v1.4.188/orca-linux.AppImage'
+$partial = 'C:\Users\DW\AppData\Local\OrcaKernelLab\downloads\v1.4.188\orca-linux.AppImage.part'
+& 'C:\Windows\system32\curl.exe' --fail --location --silent --show-error --connect-timeout 20 --max-time 300 --output $partial --write-out 'HTTP_STATUS=%{http_code} DOWNLOADED_BYTES=%{size_download}' $assetUrl
+& 'C:\Windows\system32\curl.exe' --head --location --silent --show-error --connect-timeout 10 --max-time 20 $assetUrl
+& 'C:\Windows\system32\curl.exe' --fail --location --silent --show-error --connect-timeout 20 --max-time 120 --continue-at - --output $partial --write-out 'HTTP_STATUS=%{http_code} DOWNLOADED_BYTES=%{size_download}' $assetUrl
+```
+
+HEAD 响应先在内存中筛选，仅报告 HTTP、Content-Length、Accept-Ranges 等非秘密字段，没有打印完整响应头。
+
+| 检查 | 真实结果 |
+|---|---|
+| 首次下载，300 秒上限 | HTTP 200；退出 28；300099 ms 超时；收到 7,100,544 / 205,918,977 字节 |
+| HEAD，20 秒上限 | 退出 0；约 2.16 秒；302 → 200；Content-Length=205918977；Accept-Ranges=bytes |
+| 一次断点续传，120 秒上限 | HTTP 206；退出 28；120399 ms 超时；新增 3,219,712 / 剩余 198,818,433 字节 |
+| 最终分片 | 10,320,256 字节；仍缺 195,598,721 字节；截至本地 18:00:32，两次下载进程均已退出 |
+| 官方 SHA256 比较 | 未执行：文件不完整，未冒称摘要通过；期望值仍为上方已取得的官方资产摘要 |
+| 安装 / Orca serve / Codex / Worker | 未执行；没有运行失败可报告 |
+
+**首个实际失败层：发行包网络传输在设定时限内未完成（curl 28）。** 官方端点可达且续传返回 206；实测约 23–26 KiB/s，不能据此认定代理故障、Docker 不可用或需要 VM。本轮保留分片，不改代理，不自动循环重试。
+
+### 当前交接与下一条动作
+
+当前关卡及状态：G00 待验收，0/11 关通过；发行包准备因传输超时未完成。G03 未自动通过，G01–G10 仍待开始。
+
+实际完成：登记用户隔离授权；创建与日常 Orca 分离的下载目录；执行一次下载、一次 HEAD 与一次续传；保存真实分片和错误；原始提示词、记忆/hooks 定位及既有 Docker 冒烟证据未覆盖。
+
+下一条可执行动作：在同一授权目录检查现有分片后，对同一固定 URL 使用 `--continue-at -` 继续有界续传，仍不需要新的下载授权；若采用更长传输窗口，明确设置时限。收到完整 205918977 字节后，以 `Get-FileHash -Algorithm SHA256` 比较官方摘要，仅相符且目标不存在才将 `.part` 改名为 `orca-linux.AppImage`。后续按既有关卡准备最小容器配置；基础镜像/依赖若涉及授权外新增下载，先列准确对象。
+
+提交与实际验收结果：上表为实际执行结果，下载和续传均失败，校验与安装未测；Node 只读比较确认关卡状态、原始协议和 G01 起后续正文未变，本地链接与 Markdown 围栏检查通过；`git diff --check` 退出 0。以上仅是文档验证。提交保留在 `docs/g00-project-takeover`，实际 SHA 可通过 `git log -1 -- docs/G00-HANDOFF.md` 定位。
+
+仍在运行的 Worker／未完成事项：无 Worker、无下载进程、本轮无新容器。分片保留供续传；完整产物、容器配置和启动验证未完成；CURRENT 完整复现仍由 G04 承接。
+
+需要用户作出的决定：G00 是否放行仍由用户验收决定；本次下载授权已生效，没有待批准的重复下载请求，也没有需要用户切换 Windows 账户或修改日常 Orca 的动作。
